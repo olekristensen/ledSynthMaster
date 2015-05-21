@@ -1,9 +1,32 @@
+/*  
+ ledSynthMaster - a server/gateway for ledSynth dmx controllers
+ for control praradigm experiments with LED fixtures.
+ Copyright (C) 2015  Ole Kristensen
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+ ole@kristensen.name
+ olek@itu.dk
+ */
+
 #include "ofApp.h"
 
 //--------------------------------------------------------------
 void ofApp::setup(){
 
     connected = false;
+    acknowledged = false;
     
     ble = [[BLEDelegate alloc] init];
     [ble initialize];
@@ -18,7 +41,12 @@ void ofApp::exit(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
+    /*int x = fmodf(ofGetElapsedTimef()*100.0, ofGetWidth()*1.0);
+    int y = fmodf((ofGetElapsedTimef()+0.5)*100.0, ofGetHeight()*1.0);
+    if(connected && ofGetFrameNum()%8 == 0){
+        this->ofApp::mouseDragged(x, y, 0);
+    }
+     */
 }
 
 //--------------------------------------------------------------
@@ -44,6 +72,7 @@ void ofApp::mouseMoved(int x, int y){
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
     if(acknowledged){
+        cout << x << ", " << y << endl;
     unsigned char msg[] = { 0x01, 'I', '0', '0', '0', '0', '0' , '0', 0x03,
                             0x01, 'T', '0', '0', '0', '0', '0' , '0', 0x03  };
     
@@ -136,6 +165,7 @@ void ofApp::didConnectRFduino(CBPeripheral *rfduino)
 {
     cout << " didConnectRFduino " << endl;
     connected = true;
+    acknowledged = true;
 }
 
 void ofApp::didLoadServiceRFduino(CBPeripheral *rfduino)
