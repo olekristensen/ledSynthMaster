@@ -24,6 +24,8 @@
 
 #include "ofMain.h"
 #include "ofxRFduinoApp.h"
+#include "ledSynth.h"
+#include "ofxGui.h"
 #import "BLEDelegate.h"
 
 class ofApp : public ofBaseApp, public ofxRFduinoApp {
@@ -54,11 +56,10 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     
     void onBluetooth();
     
-    bool acknowledged = false;
-    
     BLEDelegate *ble;
+    vector<ledSynth*> ledSynths;
     
-    bool connected;
-//
-//     ofxRFduinoDelegate *rfduinoImpl;
+    ofxPanel gui;
+    ofParameterGroup parameters;
+    
 };

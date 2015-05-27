@@ -21,10 +21,12 @@
 		640279EE111671BD026CB013 /* ofxOscReceiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C2FAC65C491D4231379F3298 /* ofxOscReceiver.cpp */; };
 		67FE4C7B15C2F0478C8126C2 /* NetworkingUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3B361208CD4107E479F04E7B /* NetworkingUtils.cpp */; };
 		72A929D3561B8232A182ABFC /* ofxOscBundle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65EEFA3DA3526E9CDD9C21F9 /* ofxOscBundle.cpp */; };
-		7F1B3CFE1AD6946F00EC1AE9 /* BLEDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B3CFB1AD6946F00EC1AE9 /* BLEDelegate.m */; };
+		7F1B3CFE1AD6946F00EC1AE9 /* BLEDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B3CFB1AD6946F00EC1AE9 /* BLEDelegate.mm */; };
 		7F1B3CFF1AD6946F00EC1AE9 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B3CFC1AD6946F00EC1AE9 /* main.cpp */; };
 		7F1B3D021AD695D500EC1AE9 /* IOBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F1B3D001AD695B800EC1AE9 /* IOBluetooth.framework */; };
 		7F1B3D061AD6973000EC1AE9 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F1B3D041AD6971F00EC1AE9 /* QuartzCore.framework */; };
+		7FA0F4DD1B15AC400014D694 /* BLEPeripheralDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7FA0F4DB1B15AC400014D694 /* BLEPeripheralDelegate.mm */; };
+		7FA0F4E01B15BDF70014D694 /* ledSynth.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7FA0F4DE1B15BDF70014D694 /* ledSynth.mm */; };
 		837220E80EB56CD44AD27F2A /* ofxSlider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F2C6477A769C03A56D1401 /* ofxSlider.cpp */; };
 		856AA354D08AB4B323081444 /* ofxBaseGui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9604B925D32EE39065747725 /* ofxBaseGui.cpp */; };
 		879A251454401BC0B6E4F238 /* OscTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9BFFBBF4CC43DEE890B3C3E /* OscTypes.cpp */; };
@@ -115,11 +117,16 @@
 		7689F8A0F3D0B7635A8C3104 /* ofxOscArg.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxOscArg.h; path = ../../../addons/ofxOsc/src/ofxOscArg.h; sourceTree = SOURCE_ROOT; };
 		78D67A00EB899FAC09430597 /* ofxLabel.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxLabel.cpp; path = ../../../addons/ofxGui/src/ofxLabel.cpp; sourceTree = SOURCE_ROOT; };
 		7F1B3CFA1AD6946F00EC1AE9 /* BLEDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDelegate.h; sourceTree = "<group>"; };
-		7F1B3CFB1AD6946F00EC1AE9 /* BLEDelegate.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = BLEDelegate.m; sourceTree = "<group>"; };
+		7F1B3CFB1AD6946F00EC1AE9 /* BLEDelegate.mm */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = BLEDelegate.mm; sourceTree = "<group>"; };
 		7F1B3CFC1AD6946F00EC1AE9 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		7F1B3CFD1AD6946F00EC1AE9 /* ofxRFduinoApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxRFduinoApp.h; sourceTree = "<group>"; };
 		7F1B3D001AD695B800EC1AE9 /* IOBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOBluetooth.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/System/Library/Frameworks/IOBluetooth.framework; sourceTree = DEVELOPER_DIR; };
 		7F1B3D041AD6971F00EC1AE9 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		7FA0F4DA1B15ABF10014D694 /* ofxRFduino.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxRFduino.h; sourceTree = "<group>"; };
+		7FA0F4DB1B15AC400014D694 /* BLEPeripheralDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BLEPeripheralDelegate.mm; sourceTree = "<group>"; };
+		7FA0F4DC1B15AC400014D694 /* BLEPeripheralDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEPeripheralDelegate.h; sourceTree = "<group>"; };
+		7FA0F4DE1B15BDF70014D694 /* ledSynth.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ledSynth.mm; sourceTree = "<group>"; };
+		7FA0F4DF1B15BDF70014D694 /* ledSynth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ledSynth.h; sourceTree = "<group>"; };
 		802251BAF1B35B1D67B32FD0 /* ofxSliderGroup.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxSliderGroup.cpp; path = ../../../addons/ofxGui/src/ofxSliderGroup.cpp; sourceTree = SOURCE_ROOT; };
 		81967292BFC87A0144BD32C6 /* ofxOscSender.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxOscSender.cpp; path = ../../../addons/ofxOsc/src/ofxOscSender.cpp; sourceTree = SOURCE_ROOT; };
 		832BDC407620CDBA568B713D /* tinyxmlerror.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = tinyxmlerror.cpp; path = ../../../addons/ofxXmlSettings/libs/tinyxmlerror.cpp; sourceTree = SOURCE_ROOT; };
@@ -421,11 +428,16 @@
 			isa = PBXGroup;
 			children = (
 				7F1B3CFA1AD6946F00EC1AE9 /* BLEDelegate.h */,
-				7F1B3CFB1AD6946F00EC1AE9 /* BLEDelegate.m */,
+				7F1B3CFB1AD6946F00EC1AE9 /* BLEDelegate.mm */,
 				7F1B3CFC1AD6946F00EC1AE9 /* main.cpp */,
 				7F1B3CFD1AD6946F00EC1AE9 /* ofxRFduinoApp.h */,
 				E4B69E1E0A3A1BDC003C02F2 /* ofApp.mm */,
 				E4B69E1F0A3A1BDC003C02F2 /* ofApp.h */,
+				7FA0F4DA1B15ABF10014D694 /* ofxRFduino.h */,
+				7FA0F4DB1B15AC400014D694 /* BLEPeripheralDelegate.mm */,
+				7FA0F4DC1B15AC400014D694 /* BLEPeripheralDelegate.h */,
+				7FA0F4DE1B15BDF70014D694 /* ledSynth.mm */,
+				7FA0F4DF1B15BDF70014D694 /* ledSynth.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -559,7 +571,9 @@
 				837220E80EB56CD44AD27F2A /* ofxSlider.cpp in Sources */,
 				B56FE57CC35806596D38118C /* ofxSliderGroup.cpp in Sources */,
 				1CD33E884D9E3358252E82A1 /* ofxToggle.cpp in Sources */,
+				7FA0F4E01B15BDF70014D694 /* ledSynth.mm in Sources */,
 				72A929D3561B8232A182ABFC /* ofxOscBundle.cpp in Sources */,
+				7FA0F4DD1B15AC400014D694 /* BLEPeripheralDelegate.mm in Sources */,
 				5864AD82E20F15536D054EA3 /* ofxOscMessage.cpp in Sources */,
 				4ADB88E2FB52E76A471065DE /* ofxOscParameterSync.cpp in Sources */,
 				640279EE111671BD026CB013 /* ofxOscReceiver.cpp in Sources */,
@@ -577,7 +591,7 @@
 				7F1B3CFF1AD6946F00EC1AE9 /* main.cpp in Sources */,
 				933A2227713C720CEFF80FD9 /* tinyxml.cpp in Sources */,
 				9D44DC88EF9E7991B4A09951 /* tinyxmlerror.cpp in Sources */,
-				7F1B3CFE1AD6946F00EC1AE9 /* BLEDelegate.m in Sources */,
+				7F1B3CFE1AD6946F00EC1AE9 /* BLEDelegate.mm in Sources */,
 				5A4349E9754D6FA14C0F2A3A /* tinyxmlparser.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
