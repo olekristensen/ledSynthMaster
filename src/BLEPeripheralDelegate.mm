@@ -7,6 +7,7 @@
 //
 
 #include "BLEPeripheralDelegate.h"
+#include "ofxRFduino.h"
 
 @implementation BLEPeripheralDelegate
 
@@ -34,7 +35,6 @@
         if ([aService.UUID isEqual:[CBUUID UUIDWithString:@"2220"]])
         {
             [aPeripheral discoverCharacteristics:nil forService:aService];
-            app->didLoadServiceRFduino(aPeripheral);
         }
         
     }
@@ -54,20 +54,20 @@
             /* rfduino receive */
             if ([aChar.UUID isEqual:[CBUUID UUIDWithString:@"2221"]])
             {
-                [peripheral setNotifyValue:YES forCharacteristic:aChar];
+                [aPeripheral setNotifyValue:YES forCharacteristic:aChar];
                 NSLog(@"Found a receive ");
             }
             /* rfduino send */
             if ([aChar.UUID isEqual:[CBUUID UUIDWithString:@"2222"]])
             {
-                [peripheral readValueForCharacteristic:aChar];
+                [aPeripheral readValueForCharacteristic:aChar];
                 NSLog(@"Found send");
             }
             
             /* rfduino disconnect */
             if ([aChar.UUID isEqual:[CBUUID UUIDWithString:@"2223"]])
             {
-                [peripheral readValueForCharacteristic:aChar];
+                [aPeripheral readValueForCharacteristic:aChar];
                 NSLog(@"Found disconnect");
             }
         }
@@ -80,7 +80,7 @@
             /* Read device name */
             if ([aChar.UUID isEqual:[CBUUID UUIDWithString:CBUUIDDeviceNameString]])
             {
-                [peripheral readValueForCharacteristic:aChar];
+                [aPeripheral readValueForCharacteristic:aChar];
                 NSLog(@"Found a Device Name Characteristic");
             }
         }
@@ -93,12 +93,13 @@
             /* Read manufacturer name */
             if ([aChar.UUID isEqual:[CBUUID UUIDWithString:@"2A29"]])
             {
-                [peripheral readValueForCharacteristic:aChar];
+                [aPeripheral readValueForCharacteristic:aChar];
                 NSLog(@"Found a Device Manufacturer Name Characteristic");
             }
         }
     }
     peripheral = aPeripheral;
+    app->didLoadServiceRFduino(aPeripheral);
 }
 
 /*
@@ -109,18 +110,19 @@
     if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:@"2221"]])
     {
         NSData * updatedValue = characteristic.value;
-        uint8_t* dataPointer = (uint8_t*)[updatedValue bytes];
-        NSLog(@"Received data: %@", updatedValue);
-        rfDuino->receivedData(dataPointer);
+        //NSLog(@"Received data: %@", updatedValue);
+        rfDuino->receivedData(updatedValue);
     }
 }
 
 - (void) send:( unsigned char *) data len:(int)length
 {
+
     for (CBService *aService in peripheral.services)
     {
         if( [aService.UUID isEqual:[CBUUID UUIDWithString:@"2220"]])
         {
+
             for (CBCharacteristic *aChar in aService.characteristics)
             {
                 /* rfduino send */
@@ -129,7 +131,6 @@
                     //[peripheral writeValue:data forCharacteristic:aChar type:CBCharacteristicWriteWithResponse];
                     NSData *d = [NSData dataWithBytes:data length:length];
                     [peripheral writeValue:d forCharacteristic:aChar type:CBCharacteristicWriteWithoutResponse];
-                    NSLog(@"Sent data: %@", d);
 
                 }
             }

@@ -67,9 +67,9 @@
     
     for(CBPeripheral* peripheral in bleDevices){
         BLEPeripheralDelegate * pd = [peripheral delegate];
-        [peripheral setDelegate:nil];
-        [pd release];
+ //       [peripheral setDelegate:nil];
         [peripheral release];
+        [pd release];
     }
     
     [bleDevices release];
@@ -245,8 +245,6 @@
     [pd setApplication:app];
     [aPeripheral setDelegate:pd];
     [aPeripheral discoverServices:nil];
-     
-    
     app->didConnectRFduino(aPeripheral);
 
 }
@@ -257,22 +255,12 @@
  */
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)aPeripheral error:(NSError *)error
 {
-    for(CBPeripheral* peripheral in bleDevices){
-
-    if( peripheral == aPeripheral)
-    {
-        BLEPeripheralDelegate * pd = [peripheral delegate];
-        [peripheral setDelegate:nil];
-        [pd release];
-        [peripheral release];
-        peripheral = nil;
-
-        app->didDisconnectRFduino(aPeripheral);
-        
-    }
-    }
     if([bleDevices containsObject:aPeripheral]){
+        app->didDisconnectRFduino(aPeripheral);
         [bleDevices removeObject:aPeripheral];
+        BLEPeripheralDelegate * pd = [aPeripheral delegate];
+        [aPeripheral release];
+        [pd release];
     }
 }
 
@@ -283,17 +271,12 @@
 {
     NSLog(@"Fail to connect to peripheral: %@ with error = %@", aPeripheral, [error localizedDescription]);
     
-    for(CBPeripheral* peripheral in bleDevices){
-        
-        if( peripheral == aPeripheral)
-        {
-            [bleDevices removeObject:peripheral];
-            BLEPeripheralDelegate * pd = [peripheral delegate];
-            [peripheral setDelegate:nil];
-            [pd release];
-            [peripheral release];
-            peripheral = nil;
-        }
+    if([bleDevices containsObject:aPeripheral]){
+        app->didDisconnectRFduino(aPeripheral);
+        [bleDevices removeObject:aPeripheral];
+        BLEPeripheralDelegate * pd = [aPeripheral delegate];
+        [aPeripheral release];
+        [pd release];
     }
 }
 

@@ -1,7 +1,8 @@
 #import <Cocoa/Cocoa.h>
 #import <IOBluetooth/IOBluetooth.h>
 #import "ofxRFDuinoApp.h"
-#import "ofxRFDuino.h"
+
+class ofxRFduino;
 
 @interface BLEPeripheralDelegate : NSObject <CBPeripheralDelegate>
 {

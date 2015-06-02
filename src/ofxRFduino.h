@@ -10,20 +10,25 @@
 #define ledSynthMaster_ofxRFduino_h
 
 #import <IOBluetooth/IOBluetooth.h>
+#import "BLEPeripheralDelegate.h"
 #include <iostream>
 
 class ofxRFduino
 {
 public:
     
-    virtual void receivedData( unsigned char *data) = 0;
+    virtual void receivedData( NSData *data ) = 0;
     void setPeripheral(CBPeripheral * p){
+        std::cout << "SET PERIPHERAL" << std::endl;
         peripheral = p;
+        [(BLEPeripheralDelegate*)[peripheral delegate] setRFDuino:this];
     };
-    void send( unsigned char *data, int length){
-        //std::cout << "ofxRF send"  << std::endl;
-        [[peripheral delegate] send:data len:length];
+    void send(unsigned char *data, int length){
+        if(peripheral != NULL && canSend){
+            [(BLEPeripheralDelegate*)[peripheral delegate] send:data len:length];
+        }
     };
+    bool canSend = false;
     
     CBPeripheral *peripheral;
 };

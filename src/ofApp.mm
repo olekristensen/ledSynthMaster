@@ -29,7 +29,6 @@ void ofApp::setup(){
     [ble initialize];
     [ble setApplication:this];
     
-    gui.setup("ledSynth Master");
     //gui.add(parameters);
 
 }
@@ -42,27 +41,23 @@ void ofApp::exit(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    /*int x = fmodf(ofGetElapsedTimef()*100.0, ofGetWidth()*1.0);
-    int y = fmodf((ofGetElapsedTimef()+0.5)*100.0, ofGetHeight()*1.0);
-    if(connected && ofGetFrameNum()%8 == 0){
-        this->ofApp::mouseDragged(x, y, 0);
+    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
+        ledSynth * l = *it;
+        l->update();
     }
-     */
+
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     
-    ofBackgroundGradient(ofColor::sandyBrown, ofColor::saddleBrown);
+    ofBackgroundGradient(ofColor::lightGrey, ofColor::whiteSmoke);
     ofPushMatrix();
-    ofTranslate(20, 20);
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
         l->draw();
-        ofTranslate(120, 0);
     }
     ofPopMatrix();
-    gui.draw();
 
 }
 
@@ -182,6 +177,7 @@ void ofApp::didDiscoverRFduino(CBPeripheral *peripheral, NSDictionary *advertise
             
             ledSynth *l = new ledSynth();
             l->setPeripheral(peripheral);
+            l->canSend = false;
             ledSynths.push_back(l);
             [ble connectDevice:peripheral];
         }
@@ -196,6 +192,17 @@ void ofApp::didUpdateDiscoveredRFduino(CBPeripheral *peripheral)
 void ofApp::didConnectRFduino(CBPeripheral *peripheral)
 {
     cout << " didConnectRFduino " << endl;
+    
+    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
+        ledSynth * l = *it;
+        if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
+            cout << "ready to receive" << endl;
+            [[l->peripheral delegate] setRFDuino:l];
+            break;
+        }
+    }
+
+    
 }
 
 void ofApp::didLoadServiceRFduino(CBPeripheral *peripheral)
@@ -205,9 +212,8 @@ void ofApp::didLoadServiceRFduino(CBPeripheral *peripheral)
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
         if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
-            cout << "adding parameters" << endl;
-            l->setPeripheral(peripheral);
-            gui.add(l->parameters);
+            cout << "ready to send" << endl;
+            l->canSend = true;
             break;
         }
     }
@@ -222,6 +228,7 @@ void ofApp::didDisconnectRFduino(CBPeripheral *peripheral)
     std::vector<ledSynth*>::iterator it = ledSynths.begin();
     for ( ; it != ledSynths.end(); ++it){
         if ([[(*it)->peripheral identifier] isEqualTo:[peripheral identifier]]) {
+            (*it)->canSend = false;
             found = true;
             break;
         }
@@ -229,10 +236,11 @@ void ofApp::didDisconnectRFduino(CBPeripheral *peripheral)
     if (found) {
             ledSynth * l = *it;
             if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
-                ;
+           //     l->parameters.clear();
             }
 
         ledSynths.erase(it);
+        delete l;
     }
 
 }

@@ -58,8 +58,5 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     
     BLEDelegate *ble;
     vector<ledSynth*> ledSynths;
-    
-    ofxPanel gui;
-    ofParameterGroup parameters;
-    
+        
 };
