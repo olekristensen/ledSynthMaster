@@ -16,6 +16,11 @@
     app = application;
 }
 
+- (ofxRFduinoApp* ) getApplication
+{
+    return app;
+}
+
 - (void) setRFDuino:(ofxRFduino *)aRfDuino
 {
     rfDuino = aRfDuino;

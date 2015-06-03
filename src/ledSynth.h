@@ -42,6 +42,8 @@ public:
     void setGUI();
     void connect();
     
+    void setBounds(ofRectangle newBounds);
+    
     ofxUICanvas *gui;
     
     void guiEvent(ofxUIEventArgs &e);
@@ -83,6 +85,7 @@ private:
 #define guino_setMax 17
 #define guino_setValue 20
 #define guino_setColor  21
+#define guino_addDropdown 22
     
     struct RECEIVE_DATA_STRUCTURE{
         //put your variable definitions here for the data you want to receive
@@ -100,8 +103,8 @@ private:
     
     RECEIVE_DATA_STRUCTURE guino_data;
     
-    float guiSize = 16;
-    float guiMargin = OFX_UI_GLOBAL_WIDGET_SPACING;
+    float guiSize = 18;
+    float guiMargin = OFX_UI_GLOBAL_WIDGET_SPACING*2;
     
 };
 

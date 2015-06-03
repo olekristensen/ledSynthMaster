@@ -29,6 +29,7 @@ void ofApp::setup(){
     [ble initialize];
     [ble setApplication:this];
     
+    ofEnableAntiAliasing();
     //gui.add(parameters);
 
 }
@@ -41,11 +42,19 @@ void ofApp::exit(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    int index = 0;
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
         l->update();
+        float xpos = l->bounds.x;
+        xpos *= 0.95;
+        xpos += (20+(index*l->bounds.width*1.05))*0.05;
+        float ypos = l->bounds.y;
+        ypos *= 0.93;
+        ypos += 0.07 * 20;
+        l->setBounds(ofRectangle(xpos, ypos, l->bounds.width, l->bounds.height));
+        index++;
     }
-
 }
 
 //--------------------------------------------------------------
@@ -204,6 +213,22 @@ void ofApp::didConnectRFduino(CBPeripheral *peripheral)
 
     
 }
+
+void ofApp::disconnectRFduino(CBPeripheral *peripheral)
+{
+    cout << " disconnectRFduino " << endl;
+    
+    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
+        ledSynth * l = *it;
+        if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
+            [ble disonnectDevice:peripheral];
+            break;
+        }
+    }
+    
+    
+}
+
 
 void ofApp::didLoadServiceRFduino(CBPeripheral *peripheral)
 {

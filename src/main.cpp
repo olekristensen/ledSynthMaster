@@ -1,5 +1,6 @@
 #include "ofMain.h"
 #include "ofApp.h"
+#include "ofAppGLFWWindow.h"
 
 extern "C"{
     size_t fwrite$UNIX2003( const void *a, size_t b, size_t c, FILE *d )
@@ -23,7 +24,12 @@ extern "C"{
 //========================================================================
 int main( ){
 
-	ofSetupOpenGL(1024,768, OF_WINDOW);			// <-------- setup the GL context
+    // say that we're going to *use* the fancy new renderer
+    ofSetCurrentRenderer(ofGLProgrammableRenderer::TYPE);
+    
+    ofAppGLFWWindow window;
+    window.setNumSamples(16);
+    ofSetupOpenGL(&window, 1280,800, OF_WINDOW);
 
 	// this kicks off the running of my app
 	// can be OF_WINDOW or OF_FULLSCREEN

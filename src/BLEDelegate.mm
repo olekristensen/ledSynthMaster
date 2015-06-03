@@ -189,6 +189,12 @@
     [manager connectPeripheral:peripheral options:nil];
 }
 
+- (void) disconnectDevice:(CBPeripheral *) aPeripheral
+{
+    CBPeripheral * peripheral = aPeripheral;
+    [manager cancelPeripheralConnection:peripheral];
+}
+
 
 #pragma mark - CBCentralManager delegate methods
 /*

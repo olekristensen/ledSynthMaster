@@ -17,6 +17,8 @@ void EasyTransfer::begin(uint8_t * ptr, uint8_t length, ledSynth* ledSynth){
     
     //dynamic creation of rx parsing buffer in RAM
     rx_buffer = (uint8_t*) malloc(size);
+    rx_array_inx = 0;
+    rx_len = 0;
 }
 
 //Sends out struct in binary, with header, length info and checksum

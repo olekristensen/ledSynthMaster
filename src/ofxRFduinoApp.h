@@ -19,7 +19,9 @@ public:
     virtual void didConnectRFduino(CBPeripheral * rfduino) = 0;
     virtual void didLoadServiceRFduino(CBPeripheral * rfduino) = 0;
     virtual void didDisconnectRFduino(CBPeripheral *rfduino) = 0;
+    virtual void disconnectRFduino(CBPeripheral *rfduino) = 0;
     
     virtual void onBluetooth() = 0;
+    
 };
 #endif

@@ -14,14 +14,12 @@ ledSynth::ledSynth(){
     bounds.set(0, 0, 250, 500);
     ownID = 0;
     index = nextIndex++;
-    bounds.setPosition((index*bounds.width*1.05)+20, 20);
+    bounds.setPosition((index*bounds.width*1.05)+20, - bounds.height*1.1);
     setGUI();
     this->setup();
 }
 
 ledSynth::~ledSynth(){
-    //TODO: is this called upon disconnect?
-    //TODO: clean up after disconnect by deleting ledSynth and getting rid of gui drawing
     guinoClear();
     index = nextIndex--;
 }
@@ -49,13 +47,14 @@ void ledSynth::update(){
                         {
                             case guino_addSlider:
                                 ofxUISlider *slider;
-                                slider = new ofxUISlider("", 0.0, 255.0, red, length-guiMargin, guiSize);
-                                
-                                guino_items.push_back(slider);
+                                slider = new ofxUISlider("", 0.0, 255.0, 0.0, length-guiMargin, guiSize);
                                 gui->addWidgetDown(slider);
                                 slider->setID(guino_data.item);
-                                
+                                slider->setDrawOutline(true);
+                                slider->setColorOutline(ofxUIColor::black);
+                                slider->setColorOutlineHighlight(ofxUIColor::black);
                                 slider->setValue(guino_data.value);
+                                guino_items.push_back(slider);
                                 
                                 break;
                             case guino_setMax:
@@ -176,7 +175,9 @@ void ledSynth::update(){
                                 guino_items.push_back(toggle);
                                 gui->addWidget(toggle);
                                 toggle->setID(guino_data.item);
-                                
+                                toggle->setDrawOutline(true);
+                                toggle->setColorOutline(ofxUIColor::black);
+                                toggle->setColorOutlineHighlight(ofxUIColor::black);
                                 toggle->setValue(guino_data.value);
                                 
                             }
@@ -188,7 +189,10 @@ void ledSynth::update(){
                                 guino_items.push_back(button);
                                 gui->addWidgetDown(button);
                                 button->setID(guino_data.item);
-                                
+                                button->setDrawOutline(true);
+                                button->setColorOutline(ofxUIColor::black);
+                                button->setColorOutlineHighlight(ofxUIColor::red);
+                                button->setColorFill(ofxUIColor::black);
                                 button->setValue(guino_data.value);
                             }
                                 
@@ -207,6 +211,9 @@ void ledSynth::update(){
                                 gui->addWidgetDown(mg);
                                 guino_items.push_back(mg);
                                 mg->setID(guino_data.item);
+                                mg->setDrawOutline(true);
+                                mg->setColorOutline(ofxUIColor::black);
+                                mg->setColorOutlineHighlight(ofxUIColor::black);
                                 //  mg->addPoint(guino_data.value);
                             }
                                 
@@ -219,6 +226,7 @@ void ledSynth::update(){
                                 guino_items.push_back(label);
                                 gui->addWidgetDown(label);
                                 label->setID(guino_data.item);
+                                
                                 
                             }
                                 break;
@@ -243,7 +251,10 @@ void ledSynth::update(){
                                 ofxUIWaveform * wave = new ofxUIWaveform((length-guiMargin) * ((float)guino_data.value)/10.0f, 120 * ((float)guino_data.value)/10.0f, buffer, 256, 0.0, 1.0, "WAVEFORM");
                                 gui->addWidget(wave);
                                 
-                                
+                                wave->setDrawOutline(true);
+                                wave->setColorOutline(ofxUIColor::black);
+                                wave->setColorOutlineHighlight(ofxUIColor::black);
+
                                 gui->addWidgetDown(wave);
                                 guino_items.push_back(wave);
                                 wave->setID(guino_data.item);
@@ -282,6 +293,10 @@ void ledSynth::update(){
                                 {
                                     gui->addWidgetDown(rotary);
                                 }
+                                rotary->setDrawOutline(true);
+                                rotary->setColorOutline(ofxUIColor::black);
+                                rotary->setColorOutlineHighlight(ofxUIColor::black);
+
                                 rotary->setValue(guino_data.value);
                                 
                                 guino_items.push_back(rotary);
@@ -351,22 +366,25 @@ void ledSynth::update(){
 
 //--------------------------------------------------------------
 void ledSynth::draw(){
+    ofPushMatrix();
+    ofTranslate(bounds.getTopLeft());
+    ofSetColor(red, green, blue, 255);
+    ofRect(0,-3,bounds.width,3);
     if(connected) {
         ofSetColor(255);
     }else{
         ofSetColor(255,64);
     }
-    ofPushMatrix();
-    ofTranslate(bounds.getTopLeft());
     ofRect(0,0,bounds.width,bounds.height);
     ofSetColor(red, green, blue, 255);
     //ofEllipse(0, bounds.width, 10, 10);
     ofSetColor(0);
-    ofDrawBitmapStringHighlight("LEDSYNTH " + ofToString(ownID), 10, 10);
-    if(!connected){
-        ofDrawBitmapStringHighlight("connecting", 10, 40);
-    }
     ofPopMatrix();
+}
+
+void ledSynth::setBounds(ofRectangle newBounds){
+    bounds = newBounds;
+    gui->setPosition(bounds.x, bounds.y);
 }
 
 void ledSynth::receivedData(NSData *data )
@@ -420,7 +438,7 @@ void ledSynth::guiEvent(ofxUIEventArgs &e)
             {
                 guino_data.item = e.widget->getID();
                 guino_data.cmd = guino_buttonPressed;
-                
+                guino_data.value = (int16_t)((ofxUILabelButton *)guino_items[e.widget->getID()])->getValue();
                 ET.sendData();
                 
             }
@@ -449,10 +467,17 @@ void ledSynth::guiEvent(ofxUIEventArgs &e)
 
 void ledSynth::setGUI()
 {
-    red = 233; blue = 52; green = 27;
+    red = 0; blue = 0; green = 0;
     
-    gui = new ofxUICanvas(bounds.getX()+guiSize, bounds.getY()+(4*guiSize), bounds.getWidth()-(2*guiSize), bounds.getHeight()-(6*guiSize));
-
+    gui = new ofxUICanvas(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
+    gui->setColorBack(ofxUIColor::white);
+    gui->setColorFill(ofxUIColor::black);
+    gui->setColorOutline(ofxUIColor::black);
+    gui->setColorFillHighlight(ofxUIColor::red);
+    gui->setWidgetSpacing(guiMargin);
+    gui->setDrawOutline(false);
+    gui->setFont("GUI/Avenir.ttc");
+    //gui->setFont("GUI/HelveticaNeueDeskInterface.ttc");
     ofAddListener(gui->newGUIEvent,this,&ledSynth::guiEvent);
     
 }

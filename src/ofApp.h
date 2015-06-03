@@ -53,6 +53,8 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     void didLoadServiceRFduino(CBPeripheral *rfduino);
     void didDisconnectRFduino(CBPeripheral *rfduino);
     void receivedData( unsigned char *data);
+    void disconnectRFduino(CBPeripheral *rfduino);
+
     
     void onBluetooth();
     
