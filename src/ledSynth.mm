@@ -11,7 +11,7 @@
 int ledSynth::nextIndex = 0;
 
 ledSynth::ledSynth(){
-    bounds.set(0, 0, 250, 500);
+    bounds.set(0, 0, 250, 50);
     ownID = 0;
     index = nextIndex++;
     bounds.setPosition((index*bounds.width*1.05)+20, - bounds.height*1.1);
@@ -41,13 +41,13 @@ void ledSynth::update(){
                 while(inputQueue.size() > 0){
                     if(ET.receiveData())
                     {
-                        float length = gui->getRect()->getWidth() - guiMargin;
+                        float guiWidth = bounds.width - gui->getWidgetSpacing()*2 ;
                         
                         switch (guino_data.cmd)
                         {
                             case guino_addSlider:
                                 ofxUISlider *slider;
-                                slider = new ofxUISlider("", 0.0, 255.0, 0.0, length-guiMargin, guiSize);
+                                slider = new ofxUISlider("", 0.0, 255.0, 0.0, guiWidth, guiSize);
                                 gui->addWidgetDown(slider);
                                 slider->setID(guino_data.item);
                                 slider->setDrawOutline(true);
@@ -55,6 +55,7 @@ void ledSynth::update(){
                                 slider->setColorOutlineHighlight(ofxUIColor::black);
                                 slider->setValue(guino_data.value);
                                 guino_items.push_back(slider);
+                                gui->autoSizeToFitWidgets();
                                 
                                 break;
                             case guino_setMax:
@@ -170,7 +171,7 @@ void ledSynth::update(){
                                 break;
                             case guino_addToggle:
                             {
-                                ofxUIToggle * toggle =  gui->addLabelToggle( "", false, length-guiMargin,25);
+                                ofxUIToggle * toggle =  gui->addLabelToggle( "", false, guiWidth,25);
                                 
                                 guino_items.push_back(toggle);
                                 gui->addWidget(toggle);
@@ -179,13 +180,14 @@ void ledSynth::update(){
                                 toggle->setColorOutline(ofxUIColor::black);
                                 toggle->setColorOutlineHighlight(ofxUIColor::black);
                                 toggle->setValue(guino_data.value);
-                                
+                                gui->autoSizeToFitWidgets();
+
                             }
                                 break;
                                 
                             case guino_addButton:
                             {
-                                ofxUILabelButton * button = new ofxUILabelButton("", false, length-guiMargin,25);
+                                ofxUILabelButton * button = new ofxUILabelButton("", false, guiWidth,25);
                                 guino_items.push_back(button);
                                 gui->addWidgetDown(button);
                                 button->setID(guino_data.item);
@@ -194,6 +196,8 @@ void ledSynth::update(){
                                 button->setColorOutlineHighlight(ofxUIColor::red);
                                 button->setColorFill(ofxUIColor::black);
                                 button->setValue(guino_data.value);
+                                gui->autoSizeToFitWidgets();
+
                             }
                                 
                                 break;
@@ -207,7 +211,7 @@ void ledSynth::update(){
                                     buffer.push_back(0.0);
                                 }
                                 
-                                ofxUIMovingGraph * mg = new ofxUIMovingGraph((length-guiMargin) * ((float)guino_data.value)/10.0f, 120 * ((float)guino_data.value)/10.0f, buffer, 256, 0, 1000, "MOVING GRAPH");
+                                ofxUIMovingGraph * mg = new ofxUIMovingGraph((guiWidth) * ((float)guino_data.value)/10.0f, 120 * ((float)guino_data.value)/10.0f, buffer, 256, 0, 1000, "MOVING GRAPH");
                                 gui->addWidgetDown(mg);
                                 guino_items.push_back(mg);
                                 mg->setID(guino_data.item);
@@ -215,6 +219,8 @@ void ledSynth::update(){
                                 mg->setColorOutline(ofxUIColor::black);
                                 mg->setColorOutlineHighlight(ofxUIColor::black);
                                 //  mg->addPoint(guino_data.value);
+                                gui->autoSizeToFitWidgets();
+
                             }
                                 
                                 break;
@@ -226,15 +232,18 @@ void ledSynth::update(){
                                 guino_items.push_back(label);
                                 gui->addWidgetDown(label);
                                 label->setID(guino_data.item);
-                                
+                                gui->autoSizeToFitWidgets();
+                             
                                 
                             }
                                 break;
                             case guino_addSpacer:
                             {
-                                ofxUISpacer * spacer =  gui->addSpacer(length-guiMargin, guino_data.value);
+                                ofxUISpacer * spacer =  gui->addSpacer(guiWidth, guino_data.value);
                                 guino_items.push_back(spacer);
                                 spacer->setID(guino_data.item);
+                                gui->autoSizeToFitWidgets();
+
                             }
                                 break;
                            /* case guino_addColumn:
@@ -248,7 +257,7 @@ void ledSynth::update(){
                                 buffer = new float[2000];
                                 for(int i = 0; i < 256; i++) { buffer[i] = ofNoise(i/100.0); }
                                 
-                                ofxUIWaveform * wave = new ofxUIWaveform((length-guiMargin) * ((float)guino_data.value)/10.0f, 120 * ((float)guino_data.value)/10.0f, buffer, 256, 0.0, 1.0, "WAVEFORM");
+                                ofxUIWaveform * wave = new ofxUIWaveform((guiWidth) * ((float)guino_data.value)/10.0f, 120 * ((float)guino_data.value)/10.0f, buffer, 256, 0.0, 1.0, "WAVEFORM");
                                 gui->addWidget(wave);
                                 
                                 wave->setDrawOutline(true);
@@ -258,6 +267,8 @@ void ledSynth::update(){
                                 gui->addWidgetDown(wave);
                                 guino_items.push_back(wave);
                                 wave->setID(guino_data.item);
+                                gui->autoSizeToFitWidgets();
+
                             }
                                 
                                 
@@ -301,6 +312,8 @@ void ledSynth::update(){
                                 
                                 guino_items.push_back(rotary);
                                 rotary->setID(guino_data.item);
+                                gui->autoSizeToFitWidgets();
+
                             }
                                 break;
                             case guino_xypad:
@@ -375,8 +388,8 @@ void ledSynth::draw(){
     }else{
         ofSetColor(255,64);
     }
-    ofRect(0,0,bounds.width,bounds.height);
-    ofSetColor(red, green, blue, 255);
+    //ofRect(0,0,bounds.width,bounds.height);
+    //ofSetColor(red, green, blue, 255);
     //ofEllipse(0, bounds.width, 10, 10);
     ofSetColor(0);
     ofPopMatrix();
@@ -474,7 +487,7 @@ void ledSynth::setGUI()
     gui->setColorFill(ofxUIColor::black);
     gui->setColorOutline(ofxUIColor::black);
     gui->setColorFillHighlight(ofxUIColor::red);
-    gui->setWidgetSpacing(guiMargin);
+    //gui->setWidgetSpacing(guiMargin);
     gui->setDrawOutline(false);
     gui->setFont("GUI/Avenir.ttc");
     //gui->setFont("GUI/HelveticaNeueDeskInterface.ttc");

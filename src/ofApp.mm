@@ -30,14 +30,12 @@ void ofApp::setup(){
     [ble setApplication:this];
     
     ofEnableAntiAliasing();
-    //gui.add(parameters);
 
 }
 
 void ofApp::exit(){
 
     [ble cleanup];
-//    [ble close];
 }
 
 //--------------------------------------------------------------
@@ -170,7 +168,7 @@ void ofApp::didDiscoverRFduino(CBPeripheral *peripheral, NSDictionary *advertise
     cout << " didDiscoverRFduino " << [[peripheral name] UTF8String];
     cout << " advertising " << [[advertisementData description] UTF8String] << endl;
     
-    if( [[peripheral name] isEqualTo:@"LEDSYNTH"])
+    if( [[peripheral name] isEqualTo:@"LEDSYNTH"] || [[peripheral name] isEqualTo:@"light node"])
     {
         
         bool isNew = true;
