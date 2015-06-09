@@ -106,6 +106,10 @@ private:
     float guiSize = 18;
     float guiMargin = OFX_UI_GLOBAL_WIDGET_SPACING*2;
     
+    float testTimeBegunSeconds = 0;
+    float testTimeLastTestSeconds = 0;
+    bool testing = false;
+    
 };
 
 

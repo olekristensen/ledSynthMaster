@@ -20,6 +20,9 @@ ledSynth::ledSynth(){
 }
 
 ledSynth::~ledSynth(){
+    if(testing){
+        cout << "DISCONNECTED AFTER " << ofGetElapsedTimef() - testTimeBegunSeconds << " SECONDS" << endl;
+    }
     guinoClear();
     index = nextIndex--;
 }
@@ -33,6 +36,33 @@ void ledSynth::update(){
     if(peripheral != NULL){
         switch (peripheral.state) {
             case CBPeripheralStateConnected:
+                
+                if(testing){
+                    if (testTimeBegunSeconds == 0) {
+                        testTimeBegunSeconds = ofGetElapsedTimef();
+                    } else {
+                        ((ofxUILabel *)gui->getWidget("testElapsed"))->setLabel("run time: " + ofToString(ofGetElapsedTimef()-testTimeBegunSeconds, 1));
+                    }
+                    
+                    if (testTimeLastTestSeconds + ofRandom(0.5,3.0) < ofGetElapsedTimef()) {
+                        testTimeLastTestSeconds = ofGetElapsedTimef();
+                    
+                    for(int i = 0; i < gui->getWidgets().size(); i++){
+                        ofxUIWidget * w = gui->getWidgets()[i];
+                        if(w->getName() == "intensity"){
+                            ofxUISlider * s = (ofxUISlider *) w;
+                            s->setValue(ofRandom(s->getMin(), s->getMax()));
+                            s->triggerSelf();
+                        } else if (w->getName() == "temperature") {
+                            ofxUISlider * s = (ofxUISlider *) w;
+                            s->setValue(ofRandom(s->getMin(), s->getMax()));
+                            s->triggerSelf();
+                        }
+                    }
+                    }
+                    
+                }
+                
                 if(!connected && canSend){
                     ET.begin((uint8_t*)&guino_data, sizeof(guino_data),this);
                     connected = true;
@@ -108,6 +138,7 @@ void ledSynth::update(){
                                 
                                 break;
                             case guino_iamhere:
+                                cout << "IAMHERE" << endl;
                                 guinoInit();
                                 
                                 break;
@@ -413,10 +444,12 @@ void ledSynth::guinoClear()
     
     guino_items.clear();
 
-    ofRemoveListener(gui->newGUIEvent, this,&ledSynth::guiEvent);
-    gui->clearEmbeddedWidgets();
-            
-    delete gui;
+    if(gui != NULL){
+        ofRemoveListener(gui->newGUIEvent, this,&ledSynth::guiEvent);
+        gui->clearWidgets();
+        delete gui;
+        gui = NULL;
+    }
 }
 
 void ledSynth::guinoInit()
@@ -425,10 +458,28 @@ void ledSynth::guinoInit()
     guinoClear();
     setGUI();
     
+    
+    float guiWidth = bounds.width - gui->getWidgetSpacing()*2 ;
+    ofxUIToggle * toggleTest =  gui->addLabelToggle( "TEST", false, guiWidth,25);
+    
+    //guino_items.push_back(toggleTest);
+    gui->addWidget(toggleTest);
+    toggleTest->setID(-2);
+    toggleTest->setDrawOutline(true);
+    toggleTest->setColorOutline(ofxUIColor::black);
+    toggleTest->setColorOutlineHighlight(ofxUIColor::black);
+    toggleTest->setValue(0);
+
+    ofxUILabel * labelTest = gui->addLabel("testElapsed", "", 2);
+    
+    //guino_items.push_back(toggleTest);
+    gui->addWidget(labelTest);
+    labelTest->setID(-1);
+    
     guino_data.cmd = guino_init;
     
     ET.sendData();
-    cout << "sent init";
+    cout << "sent init" << endl;
 }
 
 void ledSynth::guiEvent(ofxUIEventArgs &e)
@@ -471,8 +522,23 @@ void ledSynth::guiEvent(ofxUIEventArgs &e)
                 ET.sendData();
                 
             }
-            
-            
+        }
+        if(name == "TEST"){
+            if(((ofxUIToggle *)e.widget)->getValue() > 0){
+                ((ofxUIToggle *)e.widget)->setColorFill(ofxUIColor::red);
+                ((ofxUIToggle *)e.widget)->setColorFillHighlight(ofxUIColor::white);
+                ((ofxUIToggle *)e.widget)->getLabelWidget()->setColorFill(ofxUIColor::white);
+                ((ofxUIToggle *)e.widget)->getLabelWidget()->setColorFillHighlight(ofxUIColor::white);
+                testTimeBegunSeconds = ofGetElapsedTimef();
+                testing = true;
+            } else {
+                e.widget->setColorFill(ofxUIColor::black);
+                e.widget->setColorFillHighlight(ofxUIColor::red);
+                ((ofxUIToggle *)e.widget)->getLabelWidget()->setColorFill(ofxUIColor::black);
+                ((ofxUIToggle *)e.widget)->getLabelWidget()->setColorFillHighlight(ofxUIColor::red);
+                testTimeBegunSeconds = 0;
+                testing = false;
+            }
         }
     }
     
@@ -491,6 +557,8 @@ void ledSynth::setGUI()
     gui->setDrawOutline(false);
     gui->setFont("GUI/Avenir.ttc");
     //gui->setFont("GUI/HelveticaNeueDeskInterface.ttc");
+    gui->autoSizeToFitWidgets();
+  
     ofAddListener(gui->newGUIEvent,this,&ledSynth::guiEvent);
     
 }
