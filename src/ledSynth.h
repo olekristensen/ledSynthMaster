@@ -110,6 +110,9 @@ private:
     float testTimeLastTestSeconds = 0;
     bool testing = false;
     
+    float connectionEstablishedSeconds = -1.0;
+    float guinoIamHereTimeoutSeconds = 10.0;
+    
 };
 
 

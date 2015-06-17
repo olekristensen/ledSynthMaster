@@ -15,7 +15,8 @@ ledSynth::ledSynth(){
     ownID = 0;
     index = nextIndex++;
     bounds.setPosition((index*bounds.width*1.05)+20, - bounds.height*1.1);
-    setGUI();
+    gui = NULL;
+    //setGUI();
     this->setup();
 }
 
@@ -28,7 +29,7 @@ ledSynth::~ledSynth(){
 }
 
 void ledSynth::setup(){
-    gui->setDrawBack(true);
+    //gui->setDrawBack(true);
 }
 
 //--------------------------------------------------------------
@@ -66,12 +67,18 @@ void ledSynth::update(){
                 if(!connected && canSend){
                     ET.begin((uint8_t*)&guino_data, sizeof(guino_data),this);
                     connected = true;
-                    //guinoInit();
+                    connectionEstablishedSeconds = ofGetElapsedTimef();
                 }
+                /*
+                if(ofGetElapsedTimef() - connectionEstablishedSeconds > guinoIamHereTimeoutSeconds && connectionEstablishedSeconds > 0.0 && gui == NULL){
+                    guinoInit();
+                }
+                 */
                 while(inputQueue.size() > 0){
                     if(ET.receiveData())
                     {
-                        float guiWidth = bounds.width - gui->getWidgetSpacing()*2 ;
+                        
+                        float guiWidth = bounds.width - OFX_UI_GLOBAL_WIDGET_SPACING*2 ;
                         
                         switch (guino_data.cmd)
                         {
@@ -157,7 +164,17 @@ void ledSynth::update(){
                                     else if (guino_items[guino_data.item]->getKind() == OFX_UI_WIDGET_LABELTOGGLE)
                                     {
                                         ((ofxUILabelToggle *)guino_items[guino_data.item])->setValue(!(guino_data.value==0));
-                                        
+                                        if(((ofxUILabelToggle *)guino_items[guino_data.item])->getValue() > 0){
+                                            ((ofxUILabelToggle *)guino_items[guino_data.item])->setColorFill(ofxUIColor::black);
+                                            ((ofxUILabelToggle *)guino_items[guino_data.item])->setColorFillHighlight(ofxUIColor::white);
+                                            ((ofxUILabelToggle *)guino_items[guino_data.item])->getLabelWidget()->setColorFill(ofxUIColor::white);
+                                            ((ofxUILabelToggle *)guino_items[guino_data.item])->getLabelWidget()->setColorFillHighlight(ofxUIColor::white);
+                                        } else {
+                                            ((ofxUILabelToggle *)guino_items[guino_data.item])->setColorFill(ofxUIColor::black);
+                                            ((ofxUILabelToggle *)guino_items[guino_data.item])->setColorFillHighlight(ofxUIColor::black);
+                                            ((ofxUILabelToggle *)guino_items[guino_data.item])->getLabelWidget()->setColorFill(ofxUIColor::black);
+                                            ((ofxUILabelToggle *)guino_items[guino_data.item])->setColorFillHighlight(ofxUIColor::red);
+                                        }
                                     }
                                     else if (guino_items[guino_data.item]->getKind() == OFX_UI_WIDGET_WAVEFORM)
                                     {
@@ -211,6 +228,18 @@ void ledSynth::update(){
                                 toggle->setColorOutline(ofxUIColor::black);
                                 toggle->setColorOutlineHighlight(ofxUIColor::black);
                                 toggle->setValue(guino_data.value);
+                                if(toggle->getValue() > 0){
+                                    toggle->setColorFill(ofxUIColor::black);
+                                    toggle->setColorFillHighlight(ofxUIColor::white);
+                                    toggle->getLabelWidget()->setColorFill(ofxUIColor::white);
+                                    toggle->getLabelWidget()->setColorFillHighlight(ofxUIColor::white);
+                                } else {
+                                    toggle->setColorFill(ofxUIColor::black);
+                                    toggle->setColorFillHighlight(ofxUIColor::black);
+                                    toggle->getLabelWidget()->setColorFill(ofxUIColor::black);
+                                    toggle->getLabelWidget()->setColorFillHighlight(ofxUIColor::red);
+                                }
+
                                 gui->autoSizeToFitWidgets();
 
                             }
@@ -428,7 +457,9 @@ void ledSynth::draw(){
 
 void ledSynth::setBounds(ofRectangle newBounds){
     bounds = newBounds;
-    gui->setPosition(bounds.x, bounds.y);
+    if(gui != NULL){
+        gui->setPosition(bounds.x, bounds.y);
+    }
 }
 
 void ledSynth::receivedData(NSData *data )
@@ -466,8 +497,11 @@ void ledSynth::guinoInit()
     gui->addWidget(toggleTest);
     toggleTest->setID(-2);
     toggleTest->setDrawOutline(true);
-    toggleTest->setColorOutline(ofxUIColor::black);
-    toggleTest->setColorOutlineHighlight(ofxUIColor::black);
+    toggleTest->setColorFill(ofxUIColor::black);
+    toggleTest->setColorFillHighlight(ofxUIColor::black);
+    toggleTest->getLabelWidget()->setColorFill(ofxUIColor::black);
+    toggleTest->getLabelWidget()->setColorFillHighlight(ofxUIColor::red);
+
     toggleTest->setValue(0);
 
     ofxUILabel * labelTest = gui->addLabel("testElapsed", "", 2);
@@ -508,6 +542,18 @@ void ledSynth::guiEvent(ofxUIEventArgs &e)
             }
             else if(kind == OFX_UI_WIDGET_LABELTOGGLE)
             {
+                if(((ofxUIToggle *)e.widget)->getValue() > 0){
+                    ((ofxUIToggle *)e.widget)->setColorFill(ofxUIColor::black);
+                    ((ofxUIToggle *)e.widget)->setColorFillHighlight(ofxUIColor::white);
+                    ((ofxUIToggle *)e.widget)->getLabelWidget()->setColorFill(ofxUIColor::white);
+                    ((ofxUIToggle *)e.widget)->getLabelWidget()->setColorFillHighlight(ofxUIColor::white);
+                } else {
+                    ((ofxUIToggle *)e.widget)->setColorFill(ofxUIColor::black);
+                    ((ofxUIToggle *)e.widget)->setColorFillHighlight(ofxUIColor::black);
+                    ((ofxUIToggle *)e.widget)->getLabelWidget()->setColorFill(ofxUIColor::black);
+                    ((ofxUIToggle *)e.widget)->getLabelWidget()->setColorFillHighlight(ofxUIColor::red);
+                }
+
                 guino_data.item = e.widget->getID();
                 guino_data.cmd = guino_setValue;
                 guino_data.value = (int16_t)((ofxUIToggle *)guino_items[e.widget->getID()])->getValue();
@@ -525,17 +571,9 @@ void ledSynth::guiEvent(ofxUIEventArgs &e)
         }
         if(name == "TEST"){
             if(((ofxUIToggle *)e.widget)->getValue() > 0){
-                ((ofxUIToggle *)e.widget)->setColorFill(ofxUIColor::red);
-                ((ofxUIToggle *)e.widget)->setColorFillHighlight(ofxUIColor::white);
-                ((ofxUIToggle *)e.widget)->getLabelWidget()->setColorFill(ofxUIColor::white);
-                ((ofxUIToggle *)e.widget)->getLabelWidget()->setColorFillHighlight(ofxUIColor::white);
                 testTimeBegunSeconds = ofGetElapsedTimef();
                 testing = true;
             } else {
-                e.widget->setColorFill(ofxUIColor::black);
-                e.widget->setColorFillHighlight(ofxUIColor::red);
-                ((ofxUIToggle *)e.widget)->getLabelWidget()->setColorFill(ofxUIColor::black);
-                ((ofxUIToggle *)e.widget)->getLabelWidget()->setColorFillHighlight(ofxUIColor::red);
                 testTimeBegunSeconds = 0;
                 testing = false;
             }
@@ -555,6 +593,7 @@ void ledSynth::setGUI()
     gui->setColorFillHighlight(ofxUIColor::red);
     //gui->setWidgetSpacing(guiMargin);
     gui->setDrawOutline(false);
+    gui->setDrawBack(true);
     gui->setFont("GUI/Avenir.ttc");
     //gui->setFont("GUI/HelveticaNeueDeskInterface.ttc");
     gui->autoSizeToFitWidgets();
