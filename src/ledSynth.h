@@ -36,6 +36,13 @@ public:
     static int nextIndex;
     
     int ownID;
+    int channel;
+    int mixer;
+    int intensity;
+    int temperature;
+    
+    void setIntensity(int v);
+    void setTemperature(int v);
     
     void guinoInit();
     void guinoClear();

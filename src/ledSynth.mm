@@ -12,7 +12,11 @@ int ledSynth::nextIndex = 0;
 
 ledSynth::ledSynth(){
     bounds.set(0, 0, 250, 50);
-    ownID = 0;
+    ownID = -1;
+    channel = -1;
+    mixer = -1;
+    intensity = 0;
+    temperature = 0;
     index = nextIndex++;
     bounds.setPosition((index*bounds.width*1.05)+20, - bounds.height*1.1);
     gui = NULL;
@@ -45,16 +49,16 @@ void ledSynth::update(){
                         ((ofxUILabel *)gui->getWidget("testElapsed"))->setLabel("run time: " + ofToString(ofGetElapsedTimef()-testTimeBegunSeconds, 1));
                     }
                     
-                    if (testTimeLastTestSeconds + ofRandom(0.5,3.0) < ofGetElapsedTimef()) {
+                    if (testTimeLastTestSeconds + ofRandom(0.001,0.1) < ofGetElapsedTimef()) {
                         testTimeLastTestSeconds = ofGetElapsedTimef();
                     
                     for(int i = 0; i < gui->getWidgets().size(); i++){
                         ofxUIWidget * w = gui->getWidgets()[i];
-                        if(w->getName() == "intensity"){
+                        if(w->getName() == "intensity output"){
                             ofxUISlider * s = (ofxUISlider *) w;
                             s->setValue(ofRandom(s->getMin(), s->getMax()));
                             s->triggerSelf();
-                        } else if (w->getName() == "temperature") {
+                        } else if (w->getName() == "temperature output") {
                             ofxUISlider * s = (ofxUISlider *) w;
                             s->setValue(ofRandom(s->getMin(), s->getMax()));
                             s->triggerSelf();
@@ -63,8 +67,34 @@ void ledSynth::update(){
                     }
                     
                 }
+                if(gui != NULL){
+                for(int i = 0; i < gui->getWidgets().size(); i++){
+                    ofxUIWidget * w = gui->getWidgets()[i];
+                    if(w->getName() == "ID" && w->getKind() == OFX_UI_WIDGET_SLIDER_H){
+                        ofxUISlider * s = (ofxUISlider *) w;
+                        ownID = floor(s->getValue());
+                    }
+                    if(w->getName() == "CHANNEL"  && w->getKind() == OFX_UI_WIDGET_SLIDER_H){
+                        ofxUISlider * s = (ofxUISlider *) w;
+                        channel = floor(s->getValue());
+                    }
+                    if(w->getName() == "mixer"  && w->getKind() == OFX_UI_WIDGET_SLIDER_H){
+                        ofxUISlider * s = (ofxUISlider *) w;
+                        mixer = floor(s->getValue());
+                    }
+                    if(w->getName() == "intensity output"  && w->getKind() == OFX_UI_WIDGET_SLIDER_H){
+                        ofxUISlider * s = (ofxUISlider *) w;
+                        intensity = floor(s->getValue());
+                    }
+                    if(w->getName() == "temperature output"  && w->getKind() == OFX_UI_WIDGET_SLIDER_H){
+                        ofxUISlider * s = (ofxUISlider *) w;
+                        temperature = floor(s->getValue());
+                    }
+                }
+                }
+
                 
-                if(!connected && canSend){
+                if(!connected){
                     ET.begin((uint8_t*)&guino_data, sizeof(guino_data),this);
                     connected = true;
                     connectionEstablishedSeconds = ofGetElapsedTimef();
@@ -74,8 +104,7 @@ void ledSynth::update(){
                     guinoInit();
                 }
                  */
-                while(inputQueue.size() > 0){
-                    if(ET.receiveData())
+                while(inputQueue.size() > 0 && ET.receiveData())
                     {
                         
                         float guiWidth = bounds.width - OFX_UI_GLOBAL_WIDGET_SPACING*2 ;
@@ -416,7 +445,6 @@ void ledSynth::update(){
                         
                     }
                     
-                }
                 
                 break;
             case CBPeripheralStateConnecting:
@@ -579,8 +607,37 @@ void ledSynth::guiEvent(ofxUIEventArgs &e)
             }
         }
     }
-    
 }
+
+void ledSynth::setIntensity(int v){
+    for(int i = 0; i < gui->getWidgets().size(); i++){
+        ofxUIWidget * w = gui->getWidgets()[i];
+        if(w->getName() == "intensity remote"){
+            ofxUISlider * s = (ofxUISlider *) w;
+            int value = s->getValue();
+            if(value != v){
+                s->setValue(v);
+                s->triggerSelf();
+            }
+        }
+    }
+}
+
+void ledSynth::setTemperature(int v){
+    for(int i = 0; i < gui->getWidgets().size(); i++){
+        ofxUIWidget * w = gui->getWidgets()[i];
+        if(w->getName() == "temperature remote"){
+            ofxUISlider * s = (ofxUISlider *) w;
+            int value = s->getValue();
+            if(value != v){
+                s->setValue(v);
+                s->triggerSelf();
+
+            }
+        }
+    }
+}
+
 
 void ledSynth::setGUI()
 {

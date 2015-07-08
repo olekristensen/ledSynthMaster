@@ -41,9 +41,45 @@ void ofApp::exit(){
 //--------------------------------------------------------------
 void ofApp::update(){
     int index = 0;
+
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
+        
+        // update values
+        if(l->gui != NULL){
+        if (l->ownID > 0 && l->mixer >= 0 && l->channel >= 0) {
+            
+      
+            if(l->ownID != l->channel) {
+                if(l->channel == 0){
+                 // sensor
+                    
+                    ;
+                    
+                } else {
+                    
+                    ledSynth * remote = NULL;
+                    
+                    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
+                        ledSynth * r = *it;
+                        if (r->ownID == l->channel) {
+                            remote = r;
+                            break;
+                        }
+                    }
+                    
+                    if(remote != NULL){
+                        
+                        l->setIntensity(remote->intensity);
+                        l->setTemperature(remote->temperature);
+                    }
+                }
+            }
+        
+        }
+        }
         l->update();
+        // rearrange
         float xpos = l->bounds.x;
         xpos *= 0.95;
         xpos += (20+(index*l->bounds.width*1.05))*0.05;
@@ -53,6 +89,8 @@ void ofApp::update(){
         l->setBounds(ofRectangle(xpos, ypos, l->bounds.width, l->bounds.height));
         index++;
     }
+    
+    
 }
 
 //--------------------------------------------------------------
