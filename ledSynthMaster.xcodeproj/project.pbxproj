@@ -17,6 +17,14 @@
 		640279EE111671BD026CB013 /* ofxOscReceiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C2FAC65C491D4231379F3298 /* ofxOscReceiver.cpp */; };
 		67FE4C7B15C2F0478C8126C2 /* NetworkingUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3B361208CD4107E479F04E7B /* NetworkingUtils.cpp */; };
 		72A929D3561B8232A182ABFC /* ofxOscBundle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65EEFA3DA3526E9CDD9C21F9 /* ofxOscBundle.cpp */; };
+		7A99C6E41CE36AB6005318C0 /* ofxBaseGui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A99C6D31CE36AB6005318C0 /* ofxBaseGui.cpp */; };
+		7A99C6E51CE36AB6005318C0 /* ofxButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A99C6D51CE36AB6005318C0 /* ofxButton.cpp */; };
+		7A99C6E61CE36AB6005318C0 /* ofxGuiGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A99C6D81CE36AB6005318C0 /* ofxGuiGroup.cpp */; };
+		7A99C6E71CE36AB6005318C0 /* ofxLabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A99C6DA1CE36AB6005318C0 /* ofxLabel.cpp */; };
+		7A99C6E81CE36AB6005318C0 /* ofxPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A99C6DC1CE36AB6005318C0 /* ofxPanel.cpp */; };
+		7A99C6E91CE36AB6005318C0 /* ofxSlider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A99C6DE1CE36AB6005318C0 /* ofxSlider.cpp */; };
+		7A99C6EA1CE36AB6005318C0 /* ofxSliderGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A99C6E01CE36AB6005318C0 /* ofxSliderGroup.cpp */; };
+		7A99C6EB1CE36AB6005318C0 /* ofxToggle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A99C6E21CE36AB6005318C0 /* ofxToggle.cpp */; };
 		7F1B3CFE1AD6946F00EC1AE9 /* BLEDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B3CFB1AD6946F00EC1AE9 /* BLEDelegate.mm */; };
 		7F1B3CFF1AD6946F00EC1AE9 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B3CFC1AD6946F00EC1AE9 /* main.cpp */; };
 		7F1B3D021AD695D500EC1AE9 /* IOBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F1B3D001AD695B800EC1AE9 /* IOBluetooth.framework */; };
@@ -98,6 +106,23 @@
 		65EEFA3DA3526E9CDD9C21F9 /* ofxOscBundle.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxOscBundle.cpp; path = ../../../addons/ofxOsc/src/ofxOscBundle.cpp; sourceTree = SOURCE_ROOT; };
 		6B65E6930994CC4B2D2B8B33 /* OscPacketListener.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = OscPacketListener.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/OscPacketListener.h; sourceTree = SOURCE_ROOT; };
 		7689F8A0F3D0B7635A8C3104 /* ofxOscArg.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxOscArg.h; path = ../../../addons/ofxOsc/src/ofxOscArg.h; sourceTree = SOURCE_ROOT; };
+		7A99C6D31CE36AB6005318C0 /* ofxBaseGui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxBaseGui.cpp; sourceTree = "<group>"; };
+		7A99C6D41CE36AB6005318C0 /* ofxBaseGui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxBaseGui.h; sourceTree = "<group>"; };
+		7A99C6D51CE36AB6005318C0 /* ofxButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxButton.cpp; sourceTree = "<group>"; };
+		7A99C6D61CE36AB6005318C0 /* ofxButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxButton.h; sourceTree = "<group>"; };
+		7A99C6D71CE36AB6005318C0 /* ofxGui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGui.h; sourceTree = "<group>"; };
+		7A99C6D81CE36AB6005318C0 /* ofxGuiGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxGuiGroup.cpp; sourceTree = "<group>"; };
+		7A99C6D91CE36AB6005318C0 /* ofxGuiGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGuiGroup.h; sourceTree = "<group>"; };
+		7A99C6DA1CE36AB6005318C0 /* ofxLabel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxLabel.cpp; sourceTree = "<group>"; };
+		7A99C6DB1CE36AB6005318C0 /* ofxLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxLabel.h; sourceTree = "<group>"; };
+		7A99C6DC1CE36AB6005318C0 /* ofxPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxPanel.cpp; sourceTree = "<group>"; };
+		7A99C6DD1CE36AB6005318C0 /* ofxPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxPanel.h; sourceTree = "<group>"; };
+		7A99C6DE1CE36AB6005318C0 /* ofxSlider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxSlider.cpp; sourceTree = "<group>"; };
+		7A99C6DF1CE36AB6005318C0 /* ofxSlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxSlider.h; sourceTree = "<group>"; };
+		7A99C6E01CE36AB6005318C0 /* ofxSliderGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxSliderGroup.cpp; sourceTree = "<group>"; };
+		7A99C6E11CE36AB6005318C0 /* ofxSliderGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxSliderGroup.h; sourceTree = "<group>"; };
+		7A99C6E21CE36AB6005318C0 /* ofxToggle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxToggle.cpp; sourceTree = "<group>"; };
+		7A99C6E31CE36AB6005318C0 /* ofxToggle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxToggle.h; sourceTree = "<group>"; };
 		7F1B3CFA1AD6946F00EC1AE9 /* BLEDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDelegate.h; sourceTree = "<group>"; };
 		7F1B3CFB1AD6946F00EC1AE9 /* BLEDelegate.mm */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = BLEDelegate.mm; sourceTree = "<group>"; };
 		7F1B3CFC1AD6946F00EC1AE9 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -250,6 +275,52 @@
 			name = src;
 			sourceTree = "<group>";
 		};
+		7A99C6D11CE36AB6005318C0 /* ofxGui */ = {
+			isa = PBXGroup;
+			children = (
+				7A99C6D21CE36AB6005318C0 /* src */,
+			);
+			name = ofxGui;
+			path = ../../../addons/ofxGui;
+			sourceTree = "<group>";
+		};
+		7A99C6D21CE36AB6005318C0 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				7A99C6D31CE36AB6005318C0 /* ofxBaseGui.cpp */,
+				7A99C6D41CE36AB6005318C0 /* ofxBaseGui.h */,
+				7A99C6D51CE36AB6005318C0 /* ofxButton.cpp */,
+				7A99C6D61CE36AB6005318C0 /* ofxButton.h */,
+				7A99C6D71CE36AB6005318C0 /* ofxGui.h */,
+				7A99C6D81CE36AB6005318C0 /* ofxGuiGroup.cpp */,
+				7A99C6D91CE36AB6005318C0 /* ofxGuiGroup.h */,
+				7A99C6DA1CE36AB6005318C0 /* ofxLabel.cpp */,
+				7A99C6DB1CE36AB6005318C0 /* ofxLabel.h */,
+				7A99C6DC1CE36AB6005318C0 /* ofxPanel.cpp */,
+				7A99C6DD1CE36AB6005318C0 /* ofxPanel.h */,
+				7A99C6DE1CE36AB6005318C0 /* ofxSlider.cpp */,
+				7A99C6DF1CE36AB6005318C0 /* ofxSlider.h */,
+				7A99C6E01CE36AB6005318C0 /* ofxSliderGroup.cpp */,
+				7A99C6E11CE36AB6005318C0 /* ofxSliderGroup.h */,
+				7A99C6E21CE36AB6005318C0 /* ofxToggle.cpp */,
+				7A99C6E31CE36AB6005318C0 /* ofxToggle.h */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		7ADC44DC1CE37E7A00CA7FD7 /* RFduino */ = {
+			isa = PBXGroup;
+			children = (
+				7F1B3CFA1AD6946F00EC1AE9 /* BLEDelegate.h */,
+				7F1B3CFB1AD6946F00EC1AE9 /* BLEDelegate.mm */,
+				7F1B3CFD1AD6946F00EC1AE9 /* ofxRFduinoApp.h */,
+				7FA0F4DA1B15ABF10014D694 /* ofxRFduino.h */,
+				7FA0F4DB1B15AC400014D694 /* BLEPeripheralDelegate.mm */,
+				7FA0F4DC1B15AC400014D694 /* BLEPeripheralDelegate.h */,
+			);
+			name = RFduino;
+			sourceTree = "<group>";
+		};
 		86D2677079A3AF4A5A88E29A /* oscpack */ = {
 			isa = PBXGroup;
 			children = (
@@ -261,6 +332,7 @@
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
+				7A99C6D11CE36AB6005318C0 /* ofxGui */,
 				E6053AB7FEC63D5F83825B88 /* ofxOsc */,
 				1F4FB5C423662B96ADFDCC0B /* ofxXmlSettings */,
 			);
@@ -359,15 +431,10 @@
 		E4B69E1C0A3A1BDC003C02F2 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				7F1B3CFA1AD6946F00EC1AE9 /* BLEDelegate.h */,
-				7F1B3CFB1AD6946F00EC1AE9 /* BLEDelegate.mm */,
+				7ADC44DC1CE37E7A00CA7FD7 /* RFduino */,
 				7F1B3CFC1AD6946F00EC1AE9 /* main.cpp */,
-				7F1B3CFD1AD6946F00EC1AE9 /* ofxRFduinoApp.h */,
 				E4B69E1E0A3A1BDC003C02F2 /* ofApp.mm */,
 				E4B69E1F0A3A1BDC003C02F2 /* ofApp.h */,
-				7FA0F4DA1B15ABF10014D694 /* ofxRFduino.h */,
-				7FA0F4DB1B15AC400014D694 /* BLEPeripheralDelegate.mm */,
-				7FA0F4DC1B15AC400014D694 /* BLEPeripheralDelegate.h */,
 				7FA0F4DE1B15BDF70014D694 /* ledSynth.mm */,
 				7FA0F4DF1B15BDF70014D694 /* ledSynth.h */,
 				7F74F77A1B18697A00DA529E /* EasyTransfer.cpp */,
@@ -507,21 +574,29 @@
 				5864AD82E20F15536D054EA3 /* ofxOscMessage.cpp in Sources */,
 				4ADB88E2FB52E76A471065DE /* ofxOscParameterSync.cpp in Sources */,
 				640279EE111671BD026CB013 /* ofxOscReceiver.cpp in Sources */,
+				7A99C6E51CE36AB6005318C0 /* ofxButton.cpp in Sources */,
 				8F5205AEF8861EF234F0651A /* ofxOscSender.cpp in Sources */,
 				ADE367465D2A8EBAD4C7A8D9 /* IpEndpointName.cpp in Sources */,
 				67FE4C7B15C2F0478C8126C2 /* NetworkingUtils.cpp in Sources */,
 				510CAFE035E576A4E1502D52 /* UdpSocket.cpp in Sources */,
 				62545D179C94265CA1389D4A /* OscOutboundPacketStream.cpp in Sources */,
 				C4782ECC372420ACE0615B74 /* OscPrintReceivedElements.cpp in Sources */,
+				7A99C6EA1CE36AB6005318C0 /* ofxSliderGroup.cpp in Sources */,
+				7A99C6E71CE36AB6005318C0 /* ofxLabel.cpp in Sources */,
 				0546D1A38E13BD319CC9755B /* OscReceivedElements.cpp in Sources */,
+				7A99C6EB1CE36AB6005318C0 /* ofxToggle.cpp in Sources */,
 				879A251454401BC0B6E4F238 /* OscTypes.cpp in Sources */,
 				63B57AC5BF4EF088491E0317 /* ofxXmlSettings.cpp in Sources */,
 				7F1B3CFF1AD6946F00EC1AE9 /* main.cpp in Sources */,
 				933A2227713C720CEFF80FD9 /* tinyxml.cpp in Sources */,
 				9D44DC88EF9E7991B4A09951 /* tinyxmlerror.cpp in Sources */,
 				7F74F77C1B18697A00DA529E /* EasyTransfer.cpp in Sources */,
+				7A99C6E91CE36AB6005318C0 /* ofxSlider.cpp in Sources */,
+				7A99C6E41CE36AB6005318C0 /* ofxBaseGui.cpp in Sources */,
 				7F1B3CFE1AD6946F00EC1AE9 /* BLEDelegate.mm in Sources */,
 				5A4349E9754D6FA14C0F2A3A /* tinyxmlparser.cpp in Sources */,
+				7A99C6E61CE36AB6005318C0 /* ofxGuiGroup.cpp in Sources */,
+				7A99C6E81CE36AB6005318C0 /* ofxPanel.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -540,7 +615,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E4EB6923138AFD0F00A09F29 /* Project.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
 				CONFIGURATION_BUILD_DIR = "$(SRCROOT)/bin/";
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
@@ -573,7 +647,6 @@
 					../../../addons/ofxRFduino/libs,
 					../../../addons/ofxRFduino/src,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				OTHER_CPLUSPLUSFLAGS = (
 					"-D__MACOSX_CORE__",
 					"-lpthread",
@@ -587,7 +660,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E4EB6923138AFD0F00A09F29 /* Project.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
 				CONFIGURATION_BUILD_DIR = "$(SRCROOT)/bin/";
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
@@ -621,7 +693,6 @@
 					../../../addons/ofxRFduino/libs,
 					../../../addons/ofxRFduino/src,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				OTHER_CPLUSPLUSFLAGS = (
 					"-D__MACOSX_CORE__",
 					"-lpthread",
@@ -729,10 +800,8 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_51)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_52)",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "$(TARGET_NAME)Debug";
 				PROVISIONING_PROFILE = "";
-				SDKROOT = macosx;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -834,10 +903,8 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_50)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_51)",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				SDKROOT = macosx;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

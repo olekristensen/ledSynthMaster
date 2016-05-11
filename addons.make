@@ -1,4 +1,3 @@
 ofxGui
 ofxOsc
 ofxXmlSettings
-ofxRFduino

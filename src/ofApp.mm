@@ -24,6 +24,8 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    
+    ofSetLogLevel(OF_LOG_NOTICE);
 
     ble = [[BLEDelegate alloc] init];
     [ble initialize];
@@ -98,13 +100,17 @@ void ofApp::draw(){
     float scale = ofGetWidth() / 2.0;
     cam.begin();
     ofScale(scale, scale, scale);
-
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
         l->draw();
     }
     cam.end();
     ofPopMatrix();
+    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
+        ledSynth * l = *it;
+        l->gui.draw();
+    }
+    
 
 }
 
