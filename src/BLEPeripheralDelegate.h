@@ -15,7 +15,7 @@ class ofxRFduino;
 
 }
 
-//- (void) cleanup;
+- (void) cleanup;
 - (void) send:( unsigned char *) data len:(int)length;
 - (void) setApplication:( ofxRFduinoApp* )application;
 - (ofxRFduinoApp*) getApplication;

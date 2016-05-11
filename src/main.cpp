@@ -23,13 +23,10 @@ extern "C"{
 
 //========================================================================
 int main( ){
-
-    // say that we're going to *use* the fancy new renderer
-    ofSetCurrentRenderer(ofGLProgrammableRenderer::TYPE);
     
     ofAppGLFWWindow window;
-    window.setNumSamples(16);
-    ofSetupOpenGL(&window, 1280,800, OF_WINDOW);
+    
+    ofSetupOpenGL(&window, 1280,800, OF_FULLSCREEN);
 
 	// this kicks off the running of my app
 	// can be OF_WINDOW or OF_FULLSCREEN

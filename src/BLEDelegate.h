@@ -19,7 +19,7 @@
 - (void) startScan;
 - (void) stopScan;
 - (void) connectDevice:(CBPeripheral *) aPeripheral;
-- (void) disonnectDevice:(CBPeripheral *) aPeripheral;
+- (void) disconnectDevice:(CBPeripheral *) aPeripheral;
 - (BOOL) isLECapableHardware;
 
 - (void) initialize;

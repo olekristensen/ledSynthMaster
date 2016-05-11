@@ -16,6 +16,11 @@
     app = application;
 }
 
+- (void) cleanup
+{
+    ;
+}
+
 - (ofxRFduinoApp* ) getApplication
 {
     return app;

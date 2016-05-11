@@ -29,7 +29,7 @@ void ofApp::setup(){
     [ble initialize];
     [ble setApplication:this];
     
-    ofEnableAntiAliasing();
+    ofDisableAntiAliasing();
 
 }
 
@@ -215,6 +215,7 @@ void ofApp::didDiscoverRFduino(CBPeripheral *peripheral, NSDictionary *advertise
             if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
                 isNew = false;
                 cout << [peripheral identifier] << " allready connected" << endl;
+                //[ble disconnectDevice:peripheral];
             }
         }
         if(isNew){
@@ -257,7 +258,7 @@ void ofApp::disconnectRFduino(CBPeripheral *peripheral)
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
         if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
-            [ble disonnectDevice:peripheral];
+            [ble disconnectDevice:peripheral];
             break;
         }
     }

@@ -11,7 +11,7 @@
 int ledSynth::nextIndex = 0;
 
 ledSynth::ledSynth(){
-    bounds.set(0, 0, 250, 50);
+    bounds.set(0, 0, 150, 50);
     ownID = -1;
     channel = -1;
     mixer = -1;
@@ -207,7 +207,6 @@ void ledSynth::update(){
                                     }
                                     else if (guino_items[guino_data.item]->getKind() == OFX_UI_WIDGET_WAVEFORM)
                                     {
-                                        
                                         ((ofxUIWaveform *)guino_items[guino_data.item])->addPoint(guino_data.value);
                                     }
                                     else if (guino_items[guino_data.item]->getKind() == OFX_UI_WIDGET_ROTARYSLIDER)
@@ -248,7 +247,7 @@ void ledSynth::update(){
                                 break;
                             case guino_addToggle:
                             {
-                                ofxUIToggle * toggle =  gui->addLabelToggle( "", false, guiWidth,25);
+                                ofxUIToggle * toggle =  gui->addLabelToggle( "", false, guiWidth,2*guiSize);
                                 
                                 guino_items.push_back(toggle);
                                 gui->addWidget(toggle);
@@ -276,7 +275,7 @@ void ledSynth::update(){
                                 
                             case guino_addButton:
                             {
-                                ofxUILabelButton * button = new ofxUILabelButton("", false, guiWidth,25);
+                                ofxUILabelButton * button = new ofxUILabelButton("", false, guiWidth,2*guiSize);
                                 guino_items.push_back(button);
                                 gui->addWidgetDown(button);
                                 button->setID(guino_data.item);
@@ -517,8 +516,8 @@ void ledSynth::guinoInit()
     guinoClear();
     setGUI();
     
-    
     float guiWidth = bounds.width - gui->getWidgetSpacing()*2 ;
+    /*
     ofxUIToggle * toggleTest =  gui->addLabelToggle( "TEST", false, guiWidth,25);
     
     //guino_items.push_back(toggleTest);
@@ -537,7 +536,7 @@ void ledSynth::guinoInit()
     //guino_items.push_back(toggleTest);
     gui->addWidget(labelTest);
     labelTest->setID(-1);
-    
+    */
     guino_data.cmd = guino_init;
     
     ET.sendData();
@@ -653,6 +652,9 @@ void ledSynth::setGUI()
     gui->setDrawBack(true);
     gui->setFont("GUI/Avenir.ttc");
     //gui->setFont("GUI/HelveticaNeueDeskInterface.ttc");
+    gui->setFontSize(OFX_UI_FONT_LARGE, 9);
+    gui->setFontSize(OFX_UI_FONT_MEDIUM, 7);
+    gui->setFontSize(OFX_UI_FONT_SMALL, 5);
     gui->autoSizeToFitWidgets();
   
     ofAddListener(gui->newGUIEvent,this,&ledSynth::guiEvent);

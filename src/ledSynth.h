@@ -110,7 +110,7 @@ private:
     
     RECEIVE_DATA_STRUCTURE guino_data;
     
-    float guiSize = 18;
+    float guiSize = 10;
     float guiMargin = OFX_UI_GLOBAL_WIDGET_SPACING*2;
     
     float testTimeBegunSeconds = 0;

@@ -263,6 +263,7 @@
 {
     if([bleDevices containsObject:aPeripheral]){
         app->didDisconnectRFduino(aPeripheral);
+        [manager cancelPeripheralConnection:aPeripheral];
         [bleDevices removeObject:aPeripheral];
         BLEPeripheralDelegate * pd = [aPeripheral delegate];
         [aPeripheral release];
@@ -279,6 +280,7 @@
     
     if([bleDevices containsObject:aPeripheral]){
         app->didDisconnectRFduino(aPeripheral);
+        [manager cancelPeripheralConnection:aPeripheral];
         [bleDevices removeObject:aPeripheral];
         BLEPeripheralDelegate * pd = [aPeripheral delegate];
         [aPeripheral release];
