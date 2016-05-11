@@ -11,7 +11,6 @@
 
 #include "ofMain.h"
 #include "ofxRFduino.h"
-#include "ofxUI.h"
 #include <EasyTransfer.h>
 #include <string>       // std::string
 #include <iostream>     // std::cout
@@ -28,97 +27,126 @@ public:
     void update();
     void draw();
     
-    ofRectangle bounds;
-    
     void receivedData( NSData *data);
+    void hardwareInit();
     
     int index;
     static int nextIndex;
+
+    ofParameter<int> ownID                  {"ownID",                   -1,0,9};
+    ofParameter<int> remoteID               {"remoteID",                -1,0,9};
+    ofParameter<int> versionMajor           {"versionMajor",                   -1,0,9999};
+    ofParameter<int> versionMinor           {"versionMinor",                -1,0,9999};
     
-    int ownID;
-    int channel;
-    int mixer;
-    int intensity;
-    int temperature;
+    ofParameter<int> mixRemote              {"mixRemote",               0,0,5*12};
+    ofParameter<int> mixNoise               {"mixNoise",                0,0,5*12};
     
-    void setIntensity(int v);
-    void setTemperature(int v);
+    ofParameter<int> intensityFader         {"intensityFader",          0,0,1000};
+    ofParameter<int> temperatureFader       {"temperatureFader",        4200,1000,10000};
+    ofParameter<int> intensityRemote        {"intensityRemote",         0,0,1000};
+    ofParameter<int> temperatureRemote      {"temperatureRemote",       4200,1000,10000};
+    ofParameter<int> intensityNoise         {"intensityNoise",          0,0,1000};
+    ofParameter<int> temperatureNoise       {"temperatureNoise",        4200,1000,10000};
+    ofParameter<int> intensityOutput        {"intensityOutput",         0,0,1000};
+    ofParameter<int> temperatureOutput      {"temperatureOutput",       4200,1000,10000};
     
-    void guinoInit();
-    void guinoClear();
-    void setGUI();
+    ofParameter<int> intensityRangeTop      {"intensityRangeTop",       1023,0,1023};
+    ofParameter<int> intensityRangeBottom   {"intensityRangeBottom",    0,0,1023};
+    ofParameter<int> temperatureRangeTop    {"temperatureRangeTop",     1023,0,1023};
+    ofParameter<int> temperatureRangeBottom {"temperatureRangeBottom",  0,0,1023};
+    ofParameter<int> useRanges              {"useRanges",               1,0,1};
+    
+    ofParameter<int> movementSensor         {"movementSensor",          0,0,1};
+    ofParameter<int> movementSensorLevel    {"movementSensorLevel",     0,0,1000};
+    ofParameter<int> movementSensorLedActive{"movementSensorLedActive", 1,0,1};
+    
+    ofParameter<int> lightSensorTemperature {"lightSensorTemperature",  0,0,10000};
+    ofParameter<int> lightSensorLux         {"lightSensorLux",          0,0,30000};
+    ofParameter<int> lightSensorLightLevel  {"lightSensorLightLevel",   0,0,1000};
+    
+    ofParameter<int> doFaderCalibration     {"doFaderCalibration",      0,0,1};
+    ofParameter<int> doSaveId               {"doSaveId",                0,0,1};
+    
+    ofParameterGroup hardware {"node",
+        ownID,
+        remoteID,
+        versionMajor,
+        versionMinor,
+        mixRemote,
+        mixNoise,
+        intensityFader,
+        temperatureFader,
+        intensityRemote,
+        temperatureRemote,
+        intensityNoise,
+        temperatureNoise,
+        intensityOutput,
+        temperatureOutput,
+        intensityRangeTop,
+        intensityRangeTop,
+        intensityRangeBottom,
+        temperatureRangeTop,
+        temperatureRangeBottom,
+        useRanges,
+        movementSensor,
+        movementSensorLevel,
+        movementSensorLedActive,
+        lightSensorTemperature,
+        lightSensorLux,
+        lightSensorLightLevel,
+        doFaderCalibration,
+        doSaveId
+    };
+
+    ofParameter<bool> connected       {"connected", false};
+    ofParameter<bool> disconnect      {"disconnect", false};
+    ofParameter<ofVec2f> position     {"position", ofVec2f(0,0), ofVec2f(-1,-1), ofVec2f(1,1)};
+
+    ofParameterGroup parameters { "parameters",
+        hardware,
+        connected,
+        disconnect,
+        position
+    };
+
     void connect();
     
     void setBounds(ofRectangle newBounds);
     
-    ofxUICanvas *gui;
-    
-    void guiEvent(ofxUIEventArgs &e);
-    
-    ofxUIMovingGraph *mg;
     float *buffer;
     ofImage *img;
     std::queue <char> inputQueue;
     
 private:
     
-    float red, green, blue;
-    
-    bool connected = false;
-    
     EasyTransfer ET;
     
     // COMMAND STRUCTURE
-    
-#define guino_executed -1
-#define guino_init 0
-#define guino_addSlider 1
-#define guino_addButton 2
-#define guino_iamhere 3
-#define guino_addToggle 4
-#define guino_addRotarySlider 5
-#define guino_saveToBoard 6
-#define guino_setFixedGraphBuffer 8
-#define guino_clearLabel 7
-#define guino_addWaveform 9
-#define guino_addColumn 10
-#define guino_addSpacer 11
-#define guino_xypad 18
-#define guino_addLabel 12
-#define guino_addMovingGraph 13
-#define guino_buttonPressed 14
-#define guino_addChar 15
-#define guino_setMin 16
-#define guino_setMax 17
-#define guino_setValue 20
-#define guino_setColor  21
-#define guino_addDropdown 22
+
+    #define cmd_executed -1
+    #define cmd_init 0
+    #define cmd_ping 1
+    #define cmd_setValue 2
+    #define cmd_setMin 3
+    #define cmd_setMax 4
+    #define cmd_saveToBoard 9
+    #define cmd_disconnect 10
     
     struct RECEIVE_DATA_STRUCTURE{
         //put your variable definitions here for the data you want to receive
         //THIS MUST BE EXACTLY THE SAME ON THE OTHER ARDUINO
-        int16_t cmd = guino_executed;
+        int16_t cmd = cmd_executed;
         int16_t item = 0;
         int16_t value = 0;
     };
     
-
-    
-    vector<ofxUIWidget *> guino_items;
     
     // END COMMAND STRCUTURE
     
-    RECEIVE_DATA_STRUCTURE guino_data;
-    
-    float guiSize = 10;
-    float guiMargin = OFX_UI_GLOBAL_WIDGET_SPACING*2;
-    
-    float testTimeBegunSeconds = 0;
-    float testTimeLastTestSeconds = 0;
-    bool testing = false;
+    RECEIVE_DATA_STRUCTURE cmd_data;
     
     float connectionEstablishedSeconds = -1.0;
-    float guinoIamHereTimeoutSeconds = 10.0;
+    float cmdPingTimeoutSeconds = 10.0;
     
 };
 

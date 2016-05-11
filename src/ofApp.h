@@ -58,6 +58,8 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     
     void onBluetooth();
     
+    ofEasyCam cam;
+    
     BLEDelegate *ble;
     vector<ledSynth*> ledSynths;
         

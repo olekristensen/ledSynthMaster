@@ -30,7 +30,7 @@ void ofApp::setup(){
     [ble setApplication:this];
     
     ofDisableAntiAliasing();
-
+    
 }
 
 void ofApp::exit(){
@@ -46,13 +46,14 @@ void ofApp::update(){
         ledSynth * l = *it;
         
         // update values
-        if(l->gui != NULL){
-        if (l->ownID > 0 && l->mixer >= 0 && l->channel >= 0) {
+        
+        if(l->connected){
+        if (l->ownID > 0 && l->mixRemote >= 0 && l->remoteID >= 0) {
             
       
-            if(l->ownID != l->channel) {
-                if(l->channel == 0){
-                 // sensor
+            if(l->ownID != l->remoteID) {
+                if(l->remoteID == 0){
+                 // using light sensor
                     
                     ;
                     
@@ -62,7 +63,7 @@ void ofApp::update(){
                     
                     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
                         ledSynth * r = *it;
-                        if (r->ownID == l->channel) {
+                        if (r->ownID == l->remoteID) {
                             remote = r;
                             break;
                         }
@@ -70,23 +71,19 @@ void ofApp::update(){
                     
                     if(remote != NULL){
                         
-                        l->setIntensity(remote->intensity);
-                        l->setTemperature(remote->temperature);
+                        l->intensityRemote = remote->intensityOutput;
+                        l->temperatureRemote = remote->temperatureOutput;
                     }
                 }
             }
         
         }
         }
+
         l->update();
         // rearrange
-        float xpos = l->bounds.x;
-        xpos *= 0.95;
-        xpos += (20+(index*l->bounds.width*1.05))*0.05;
-        float ypos = l->bounds.y;
-        ypos *= 0.93;
-        ypos += 0.07 * 20;
-        l->setBounds(ofRectangle(xpos, ypos, l->bounds.width, l->bounds.height));
+        
+        
         index++;
     }
     
@@ -98,10 +95,15 @@ void ofApp::draw(){
     
     ofBackgroundGradient(ofColor::lightGrey, ofColor::whiteSmoke);
     ofPushMatrix();
+    float scale = ofGetWidth() / 2.0;
+    cam.begin();
+    ofScale(scale, scale, scale);
+
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
         l->draw();
     }
+    cam.end();
     ofPopMatrix();
 
 }
