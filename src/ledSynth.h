@@ -212,6 +212,17 @@ public:
         doFaderCalibration,
         doSaveId
     };
+    
+    ofParameterGroup graphParameters {"graphParameters",
+        mixRemote,
+        intensityOutput,
+        intensityFader,
+        mixNoise,
+        movementSensorLevel,
+        lightSensorLightLevel,
+        temperatureFader,
+        temperatureOutput
+    };
 
     ofParameter<bool> connected       {"connected", false};
     ofParameter<bool> disconnect      {"disconnect", false};

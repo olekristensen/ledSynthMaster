@@ -26,7 +26,7 @@
 #include "ofxRFduinoApp.h"
 #include "ledSynth.h"
 #include "ofxGui.h"
-#import "BLEDelegate.h"
+#import  "BLEDelegate.h"
 
 class ofApp : public ofBaseApp, public ofxRFduinoApp {
 
@@ -54,11 +54,12 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     void didDisconnectRFduino(CBPeripheral *rfduino);
     void receivedData( unsigned char *data);
     void disconnectRFduino(CBPeripheral *rfduino);
-
     
     void onBluetooth();
     
     ofEasyCam cam;
+    ofTrueTypeFont fontStatus;
+    ofTrueTypeFont fontNode;
     
     BLEDelegate *ble;
     vector<ledSynth*> ledSynths;

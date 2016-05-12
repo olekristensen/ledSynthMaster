@@ -24,13 +24,19 @@ extern "C"{
 //========================================================================
 int main( ){
     
-    ofAppGLFWWindow window;
+    ofGLFWWindowSettings settings;
     
-    ofSetupOpenGL(&window, 1280,800, OF_FULLSCREEN);
-
-	// this kicks off the running of my app
-	// can be OF_WINDOW or OF_FULLSCREEN
-	// pass in width and height too:
-	ofRunApp( new ofApp());
+    settings.width = 600;
+    settings.height = 600;
+    settings.setPosition(ofVec2f(300,0));
+    settings.resizable = true;
+    settings.numSamples = 8;
+    settings.setGLVersion(4, 1);
+    shared_ptr<ofAppBaseWindow> mainWindow = ofCreateWindow(settings);
+    
+    shared_ptr<ofApp> mainApp(new ofApp);
+    
+    ofRunApp(mainWindow, mainApp);
+    ofRunMainLoop();
 
 }

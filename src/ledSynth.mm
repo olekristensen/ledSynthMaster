@@ -79,24 +79,62 @@ void ledSynth::update(){
 
 //--------------------------------------------------------------
 void ledSynth::draw(){
+    
+    float innerRadius = 0.02;
+    float outerRadius = 0.08;
+
     ofPushMatrix();
     ofTranslate(position.get());
+    ofFill();
+    ofSetColor(200,255);
+    ofDrawCircle(0, 0, outerRadius);
+    
+
+    ofPath graph;
+    ofPath graphBackground;
+    
+    graph.setFilled(true);
+    graphBackground.setFilled(true);
+    graph.setColor(ofColor(233,255));
+    graphBackground.setColor(ofColor(180,255));
+    
+    int i = 0;
+    
+    for(auto p : graphParameters){
+        
+        ofVec2f pVec(0,
+                     ofMap(p->cast<int>().get(), p->cast<int>().getMin(), p->cast<int>().getMax(), innerRadius, outerRadius)
+                     );
+        
+        pVec.rotate(360.0*i/graphParameters.size());
+        
+        if(i==0){
+            graph.moveTo(pVec);
+            graphBackground.moveTo(pVec.getScaled(outerRadius));
+        } else {
+            graph.lineTo(pVec);
+            graphBackground.lineTo(pVec.getScaled(outerRadius));
+        }
+        i++;
+    }
+    graph.close();
+    graphBackground.close();
+
+    graphBackground.draw();
+    graph.draw();
+    
     if(connected) {
-        ofSetColor(temperatureToColor(temperatureOutput),255);
+        ofSetColor(temperatureToColor(temperatureOutput)*ofMap(intensityOutput,intensityOutput.getMin(),intensityOutput.getMax(), 0.0, 1.0),255);
     }else{
         ofSetColor(255,64);
     }
-    ofFill();
-    ofDrawCircle(0, 0, 0.1);
-    ofSetColor(0,255);
+    ofDrawCircle(0, 0, innerRadius);
     
-    ofDrawBitmapString(ofToString(ownID) + " -> " + ofToString(remoteID) + "\n" + ofToString(versionMajor)+"."+ofToString(versionMinor),0,0);
     ofPopMatrix();
 }
 
 void ledSynth::receivedData(NSData *data )
 {
-    //cout << "rec " << (char *)[data bytes] << endl;
     for (int i = 0; i < [data length]; i++) {
         inputQueue.push(*(((char *)[data bytes])+i));
     }

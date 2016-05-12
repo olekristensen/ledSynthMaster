@@ -26,12 +26,16 @@
 void ofApp::setup(){
     
     ofSetLogLevel(OF_LOG_NOTICE);
+    ofSetCircleResolution(200);
 
     ble = [[BLEDelegate alloc] init];
     [ble initialize];
     [ble setApplication:this];
     
-    ofDisableAntiAliasing();
+    ofEnableAntiAliasing();
+    
+    fontStatus.load("fonts/Avenir.ttc", 10, true, true, true);
+    fontNode.load("fonts/Avenir Next.ttc", 10, true, true, true);
     
 }
 
@@ -42,6 +46,10 @@ void ofApp::exit(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    
+    if(ofGetFrameNum() == 3){
+        cam.disableMouseInput();
+    }
     int index = 0;
 
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
@@ -96,6 +104,9 @@ void ofApp::update(){
 void ofApp::draw(){
     
     ofBackgroundGradient(ofColor::lightGrey, ofColor::whiteSmoke);
+    
+    // Nodes
+    
     ofPushMatrix();
     float scale = ofGetWidth() / 2.0;
     cam.begin();
@@ -103,14 +114,63 @@ void ofApp::draw(){
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
         l->draw();
+        ofSetColor(0, 0, 0, 64);
+        ofPushMatrix();
+        ofTranslate(l->position.get());
+        ofScale(1/scale,1/scale,1/scale);
+        fontNode.drawStringAsShapes(ofToString(l->ownID), -fontNode.stringWidth(ofToString(l->ownID))*0.55, -fontNode.stringHeight(ofToString(l->ownID))*0.35);
+        ofPopMatrix();
+        
     }
+    
+    // Connections
+    
+    ofSetColor(63,255);
+    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
+        ledSynth * l = *it;
+        if(l->remoteID != l->ownID){
+            
+            ledSynth * remote = NULL;
+            
+            for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
+                ledSynth * r = *it;
+                if (r->ownID == l->remoteID) {
+                    remote = r;
+                    break;
+                }
+            }
+            
+            if(remote != NULL){
+                ofDrawArrow(remote->position.get(), l->position.get(), 0.01);
+            }
+        }
+    }
+    
     cam.end();
     ofPopMatrix();
+    
+    // Guis
+    
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
         l->gui.draw();
     }
     
+    // Status bar
+    
+    string status = ([ble isLECapableHardware]?"Bluetooth LE supported":"No Bluetooth LE support");
+    status += "\n" + ofToString(ledSynth::nextIndex) + " devices connected";
+    status += "\nFPS: " + ofToString(ofGetFrameRate(), 2);
+    
+    float statusbarMargin = 20;
+    float statusbarHeight = fontStatus.stringHeight(status) + (statusbarMargin * 2.0);
+    ofSetColor(255, 200);
+    ofDrawRectangle(0, ofGetHeight()-statusbarHeight, ofGetWidth(), statusbarHeight);
+    ofSetColor(0, 127);
+    ofPushMatrix();
+    ofTranslate(statusbarMargin, (ofGetHeight()-statusbarHeight)+32);
+    fontStatus.drawString(status, 0, 0);
+    ofPopMatrix();
 
 }
 
@@ -131,48 +191,12 @@ void ofApp::mouseMoved(int x, int y){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-    /*
-    if(acknowledged){
-        cout << x << ", " << y << endl;
-    unsigned char msg[] = { 0x01, 'I', '0', '0', '0', '0', '0' , '0', 0x03,
-                            0x01, 'T', '0', '0', '0', '0', '0' , '0', 0x03  };
-    
-    string iValue = ofToString(roundf(x*65535.0/ofGetWidth()));
-    for (int i = iValue.length()-1; i >= 0; i--){
-        msg[7-i] = iValue.data()[iValue.length()-(1+i)];
-    }
-    
-    string tValue = ofToString(roundf(y*65535.0/ofGetHeight()));
-    for (int i = tValue.length()-1; i >= 0; i--){
-        msg[(9+7)-i] = tValue.data()[tValue.length()-(1+i)];
-    }
-    
-    [ble send:msg len:9*2];
-    }
-     */
+
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-    /*
-    if(acknowledged){
-
-    unsigned char msg[] = { 0x01, 'I', '0', '0', '0', '0', '0' , '0', 0x03,
-        0x01, 'T', '0', '0', '0', '0', '0' , '0', 0x03  };
     
-    string iValue = ofToString(roundf(x*65535.0/ofGetWidth()));
-    for (int i = iValue.length()-1; i >= 0; i--){
-        msg[7-i] = iValue.data()[iValue.length()-(1+i)];
-    }
-    
-    string tValue = ofToString(roundf(y*65535.0/ofGetHeight()));
-    for (int i = tValue.length()-1; i >= 0; i--){
-        msg[(9+7)-i] = tValue.data()[tValue.length()-(1+i)];
-    }
-    
-    [ble send:msg len:9*2];
-    }
-     */
 }
 
 //--------------------------------------------------------------
@@ -200,19 +224,19 @@ void ofApp::onBluetooth()
     if([ble isLECapableHardware])
     {
         [ble startScan];
-        cout << " started scanning " << endl;
+        ofLogNotice() << " started scanning " << endl;
     }
     else
     {
-        cout << " uh oh, this computer won't work :( :( :( :( " << endl;
+        ofLogError() << " uh oh, this computer won't work :( :( :( :( " << endl;
         exit();
     }
 }
 
 void ofApp::didDiscoverRFduino(CBPeripheral *peripheral, NSDictionary *advertisementData)
 {
-    cout << " didDiscoverRFduino " << [[peripheral name] UTF8String];
-    cout << " advertising " << [[advertisementData description] UTF8String] << endl;
+    ofLogNotice() << " didDiscoverRFduino " << [[peripheral name] UTF8String];
+    ofLogNotice() << " advertising " << [[advertisementData description] UTF8String] << endl;
     
     if( [[peripheral name] isEqualTo:@"LEDSYNTH"] || [[peripheral name] isEqualTo:@"light node"])
     {
@@ -222,12 +246,12 @@ void ofApp::didDiscoverRFduino(CBPeripheral *peripheral, NSDictionary *advertise
             ledSynth * l = *it;
             if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
                 isNew = false;
-                cout << [peripheral identifier] << " allready connected" << endl;
+                ofLogNotice() << [peripheral identifier] << " allready connected" << endl;
                 //[ble disconnectDevice:peripheral];
             }
         }
         if(isNew){
-            cout << [peripheral identifier] << " is NEW" << endl;
+            ofLogNotice() << [peripheral identifier] << " is new" << endl;
             
             ledSynth *l = new ledSynth();
             l->setPeripheral(peripheral);
@@ -240,18 +264,18 @@ void ofApp::didDiscoverRFduino(CBPeripheral *peripheral, NSDictionary *advertise
 
 void ofApp::didUpdateDiscoveredRFduino(CBPeripheral *peripheral)
 {
-    cout << " didUpdateDiscoveredRFduino " << endl;
+    ofLogNotice() << " didUpdateDiscoveredRFduino " << endl;
 }
 
 void ofApp::didConnectRFduino(CBPeripheral *peripheral)
 {
-    cout << " didConnectRFduino " << endl;
+    ofLogNotice() << " didConnectRFduino " << endl;
     
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
         if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
-            cout << "ready to receive" << endl;
-            [[l->peripheral delegate] setRFDuino:l];
+            ofLogNotice() << "ready to receive" << endl;
+            [(BLEPeripheralDelegate*)[l->peripheral delegate] setRFDuino:l];
             break;
         }
     }
@@ -261,7 +285,7 @@ void ofApp::didConnectRFduino(CBPeripheral *peripheral)
 
 void ofApp::disconnectRFduino(CBPeripheral *peripheral)
 {
-    cout << " disconnectRFduino " << endl;
+    ofLogNotice() << " disconnectRFduino " << endl;
     
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
@@ -277,12 +301,12 @@ void ofApp::disconnectRFduino(CBPeripheral *peripheral)
 
 void ofApp::didLoadServiceRFduino(CBPeripheral *peripheral)
 {
-    cout << " didLoadServiceRFduino " << endl;
+    ofLogNotice() << " didLoadServiceRFduino " << endl;
     
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
         if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
-            cout << "ready to send" << endl;
+            ofLogNotice() << "ready to send" << endl;
             l->canSend = true;
             break;
         }
@@ -292,7 +316,7 @@ void ofApp::didLoadServiceRFduino(CBPeripheral *peripheral)
 
 void ofApp::didDisconnectRFduino(CBPeripheral *peripheral)
 {
-    cout << " didDisconnectRFduino " << endl;
+    ofLogNotice() << " didDisconnectRFduino " << endl;
     
     bool found = false;
     std::vector<ledSynth*>::iterator it = ledSynths.begin();
