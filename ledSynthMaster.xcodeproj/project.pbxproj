@@ -17,6 +17,15 @@
 		640279EE111671BD026CB013 /* ofxOscReceiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C2FAC65C491D4231379F3298 /* ofxOscReceiver.cpp */; };
 		67FE4C7B15C2F0478C8126C2 /* NetworkingUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3B361208CD4107E479F04E7B /* NetworkingUtils.cpp */; };
 		72A929D3561B8232A182ABFC /* ofxOscBundle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65EEFA3DA3526E9CDD9C21F9 /* ofxOscBundle.cpp */; };
+		7A6E83081CEB3E3000E1AF77 /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6E82EA1CEB3E3000E1AF77 /* imgui.cpp */; };
+		7A6E83091CEB3E3000E1AF77 /* imgui_demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6E82EC1CEB3E3000E1AF77 /* imgui_demo.cpp */; };
+		7A6E830A1CEB3E3000E1AF77 /* imgui_draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6E82ED1CEB3E3000E1AF77 /* imgui_draw.cpp */; };
+		7A6E830B1CEB3E3000E1AF77 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 7A6E82F01CEB3E3000E1AF77 /* README.md */; };
+		7A6E830D1CEB3E3000E1AF77 /* BaseEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6E82F61CEB3E3000E1AF77 /* BaseEngine.cpp */; };
+		7A6E830E1CEB3E3000E1AF77 /* BaseTheme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6E82F81CEB3E3000E1AF77 /* BaseTheme.cpp */; };
+		7A6E830F1CEB3E3000E1AF77 /* EngineGLFW.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6E82FA1CEB3E3000E1AF77 /* EngineGLFW.cpp */; };
+		7A6E83101CEB3E3000E1AF77 /* EngineOpenGLES.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6E82FC1CEB3E3000E1AF77 /* EngineOpenGLES.cpp */; };
+		7A6E83111CEB3E3000E1AF77 /* ofxImGui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6E82FF1CEB3E3000E1AF77 /* ofxImGui.cpp */; };
 		7A99C6E41CE36AB6005318C0 /* ofxBaseGui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A99C6D31CE36AB6005318C0 /* ofxBaseGui.cpp */; };
 		7A99C6E51CE36AB6005318C0 /* ofxButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A99C6D51CE36AB6005318C0 /* ofxButton.cpp */; };
 		7A99C6E61CE36AB6005318C0 /* ofxGuiGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A99C6D81CE36AB6005318C0 /* ofxGuiGroup.cpp */; };
@@ -106,6 +115,28 @@
 		65EEFA3DA3526E9CDD9C21F9 /* ofxOscBundle.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxOscBundle.cpp; path = ../../../addons/ofxOsc/src/ofxOscBundle.cpp; sourceTree = SOURCE_ROOT; };
 		6B65E6930994CC4B2D2B8B33 /* OscPacketListener.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = OscPacketListener.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/OscPacketListener.h; sourceTree = SOURCE_ROOT; };
 		7689F8A0F3D0B7635A8C3104 /* ofxOscArg.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxOscArg.h; path = ../../../addons/ofxOsc/src/ofxOscArg.h; sourceTree = SOURCE_ROOT; };
+		7A6E82EA1CEB3E3000E1AF77 /* imgui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui.cpp; sourceTree = "<group>"; };
+		7A6E82EB1CEB3E3000E1AF77 /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
+		7A6E82EC1CEB3E3000E1AF77 /* imgui_demo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_demo.cpp; sourceTree = "<group>"; };
+		7A6E82ED1CEB3E3000E1AF77 /* imgui_draw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_draw.cpp; sourceTree = "<group>"; };
+		7A6E82EE1CEB3E3000E1AF77 /* imgui_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui_internal.h; sourceTree = "<group>"; };
+		7A6E82EF1CEB3E3000E1AF77 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		7A6E82F01CEB3E3000E1AF77 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		7A6E82F11CEB3E3000E1AF77 /* stb_rect_pack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_rect_pack.h; sourceTree = "<group>"; };
+		7A6E82F21CEB3E3000E1AF77 /* stb_textedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_textedit.h; sourceTree = "<group>"; };
+		7A6E82F31CEB3E3000E1AF77 /* stb_truetype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_truetype.h; sourceTree = "<group>"; };
+		7A6E82F61CEB3E3000E1AF77 /* BaseEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseEngine.cpp; sourceTree = "<group>"; };
+		7A6E82F71CEB3E3000E1AF77 /* BaseEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseEngine.h; sourceTree = "<group>"; };
+		7A6E82F81CEB3E3000E1AF77 /* BaseTheme.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseTheme.cpp; sourceTree = "<group>"; };
+		7A6E82F91CEB3E3000E1AF77 /* BaseTheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseTheme.h; sourceTree = "<group>"; };
+		7A6E82FA1CEB3E3000E1AF77 /* EngineGLFW.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EngineGLFW.cpp; sourceTree = "<group>"; };
+		7A6E82FB1CEB3E3000E1AF77 /* EngineGLFW.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EngineGLFW.h; sourceTree = "<group>"; };
+		7A6E82FC1CEB3E3000E1AF77 /* EngineOpenGLES.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EngineOpenGLES.cpp; sourceTree = "<group>"; };
+		7A6E82FD1CEB3E3000E1AF77 /* EngineOpenGLES.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EngineOpenGLES.h; sourceTree = "<group>"; };
+		7A6E82FE1CEB3E3000E1AF77 /* imconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imconfig.h; sourceTree = "<group>"; };
+		7A6E82FF1CEB3E3000E1AF77 /* ofxImGui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxImGui.cpp; sourceTree = "<group>"; };
+		7A6E83001CEB3E3000E1AF77 /* ofxImGui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxImGui.h; sourceTree = "<group>"; };
+		7A6E83011CEB3E3000E1AF77 /* ThemeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThemeTest.h; sourceTree = "<group>"; };
 		7A99C6D31CE36AB6005318C0 /* ofxBaseGui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxBaseGui.cpp; sourceTree = "<group>"; };
 		7A99C6D41CE36AB6005318C0 /* ofxBaseGui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxBaseGui.h; sourceTree = "<group>"; };
 		7A99C6D51CE36AB6005318C0 /* ofxButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxButton.cpp; sourceTree = "<group>"; };
@@ -275,6 +306,68 @@
 			name = src;
 			sourceTree = "<group>";
 		};
+		7A6E82BC1CEB3E3000E1AF77 /* ofxImGui */ = {
+			isa = PBXGroup;
+			children = (
+				7A6E82E71CEB3E3000E1AF77 /* libs */,
+				7A6E82F51CEB3E3000E1AF77 /* src */,
+			);
+			name = ofxImGui;
+			path = ../../../addons/ofxImGui;
+			sourceTree = "<group>";
+		};
+		7A6E82E71CEB3E3000E1AF77 /* libs */ = {
+			isa = PBXGroup;
+			children = (
+				7A6E82E81CEB3E3000E1AF77 /* imgui */,
+			);
+			path = libs;
+			sourceTree = "<group>";
+		};
+		7A6E82E81CEB3E3000E1AF77 /* imgui */ = {
+			isa = PBXGroup;
+			children = (
+				7A6E82E91CEB3E3000E1AF77 /* src */,
+			);
+			path = imgui;
+			sourceTree = "<group>";
+		};
+		7A6E82E91CEB3E3000E1AF77 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				7A6E82EA1CEB3E3000E1AF77 /* imgui.cpp */,
+				7A6E82EB1CEB3E3000E1AF77 /* imgui.h */,
+				7A6E82EC1CEB3E3000E1AF77 /* imgui_demo.cpp */,
+				7A6E82ED1CEB3E3000E1AF77 /* imgui_draw.cpp */,
+				7A6E82EE1CEB3E3000E1AF77 /* imgui_internal.h */,
+				7A6E82EF1CEB3E3000E1AF77 /* LICENSE */,
+				7A6E82F01CEB3E3000E1AF77 /* README.md */,
+				7A6E82F11CEB3E3000E1AF77 /* stb_rect_pack.h */,
+				7A6E82F21CEB3E3000E1AF77 /* stb_textedit.h */,
+				7A6E82F31CEB3E3000E1AF77 /* stb_truetype.h */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		7A6E82F51CEB3E3000E1AF77 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				7A6E82F61CEB3E3000E1AF77 /* BaseEngine.cpp */,
+				7A6E82F71CEB3E3000E1AF77 /* BaseEngine.h */,
+				7A6E82F81CEB3E3000E1AF77 /* BaseTheme.cpp */,
+				7A6E82F91CEB3E3000E1AF77 /* BaseTheme.h */,
+				7A6E82FA1CEB3E3000E1AF77 /* EngineGLFW.cpp */,
+				7A6E82FB1CEB3E3000E1AF77 /* EngineGLFW.h */,
+				7A6E82FC1CEB3E3000E1AF77 /* EngineOpenGLES.cpp */,
+				7A6E82FD1CEB3E3000E1AF77 /* EngineOpenGLES.h */,
+				7A6E82FE1CEB3E3000E1AF77 /* imconfig.h */,
+				7A6E82FF1CEB3E3000E1AF77 /* ofxImGui.cpp */,
+				7A6E83001CEB3E3000E1AF77 /* ofxImGui.h */,
+				7A6E83011CEB3E3000E1AF77 /* ThemeTest.h */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
 		7A99C6D11CE36AB6005318C0 /* ofxGui */ = {
 			isa = PBXGroup;
 			children = (
@@ -332,6 +425,7 @@
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
+				7A6E82BC1CEB3E3000E1AF77 /* ofxImGui */,
 				7A99C6D11CE36AB6005318C0 /* ofxGui */,
 				E6053AB7FEC63D5F83825B88 /* ofxOsc */,
 				1F4FB5C423662B96ADFDCC0B /* ofxXmlSettings */,
@@ -567,6 +661,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7A6E830A1CEB3E3000E1AF77 /* imgui_draw.cpp in Sources */,
 				E4B69E210A3A1BDC003C02F2 /* ofApp.mm in Sources */,
 				7FA0F4E01B15BDF70014D694 /* ledSynth.mm in Sources */,
 				72A929D3561B8232A182ABFC /* ofxOscBundle.cpp in Sources */,
@@ -576,7 +671,10 @@
 				640279EE111671BD026CB013 /* ofxOscReceiver.cpp in Sources */,
 				7A99C6E51CE36AB6005318C0 /* ofxButton.cpp in Sources */,
 				8F5205AEF8861EF234F0651A /* ofxOscSender.cpp in Sources */,
+				7A6E83081CEB3E3000E1AF77 /* imgui.cpp in Sources */,
+				7A6E83111CEB3E3000E1AF77 /* ofxImGui.cpp in Sources */,
 				ADE367465D2A8EBAD4C7A8D9 /* IpEndpointName.cpp in Sources */,
+				7A6E830E1CEB3E3000E1AF77 /* BaseTheme.cpp in Sources */,
 				67FE4C7B15C2F0478C8126C2 /* NetworkingUtils.cpp in Sources */,
 				510CAFE035E576A4E1502D52 /* UdpSocket.cpp in Sources */,
 				62545D179C94265CA1389D4A /* OscOutboundPacketStream.cpp in Sources */,
@@ -587,9 +685,14 @@
 				7A99C6EB1CE36AB6005318C0 /* ofxToggle.cpp in Sources */,
 				879A251454401BC0B6E4F238 /* OscTypes.cpp in Sources */,
 				63B57AC5BF4EF088491E0317 /* ofxXmlSettings.cpp in Sources */,
+				7A6E830B1CEB3E3000E1AF77 /* README.md in Sources */,
 				7F1B3CFF1AD6946F00EC1AE9 /* main.cpp in Sources */,
 				933A2227713C720CEFF80FD9 /* tinyxml.cpp in Sources */,
+				7A6E83091CEB3E3000E1AF77 /* imgui_demo.cpp in Sources */,
 				9D44DC88EF9E7991B4A09951 /* tinyxmlerror.cpp in Sources */,
+				7A6E830F1CEB3E3000E1AF77 /* EngineGLFW.cpp in Sources */,
+				7A6E830D1CEB3E3000E1AF77 /* BaseEngine.cpp in Sources */,
+				7A6E83101CEB3E3000E1AF77 /* EngineOpenGLES.cpp in Sources */,
 				7F74F77C1B18697A00DA529E /* EasyTransfer.cpp in Sources */,
 				7A99C6E91CE36AB6005318C0 /* ofxSlider.cpp in Sources */,
 				7A99C6E41CE36AB6005318C0 /* ofxBaseGui.cpp in Sources */,

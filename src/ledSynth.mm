@@ -21,7 +21,7 @@ ledSynth::~ledSynth(){
 
 void ledSynth::setup(){
     position.set(ofVec2f(ofRandom(-1.0,1.0), ofRandom(-0.5,0.5)));
-    gui.setup(parameters, "settings.xml");
+    //gui.setup(parameters, "settings.xml");
     ofAddListener(parameters.parameterChangedE(), this, &ledSynth::updateHardwareValue);
 }
 
@@ -89,7 +89,6 @@ void ledSynth::draw(){
     ofSetColor(200,255);
     ofDrawCircle(0, 0, outerRadius);
     
-
     ofPath graph;
     ofPath graphBackground;
     
@@ -124,13 +123,27 @@ void ledSynth::draw(){
     graph.draw();
     
     if(connected) {
-        ofSetColor(temperatureToColor(temperatureOutput)*ofMap(intensityOutput,intensityOutput.getMin(),intensityOutput.getMax(), 0.0, 1.0),255);
+        ofSetColor(temperatureToColor(temperatureOutput+temperatureVisualisationOffset)*ofMap(intensityOutput,intensityOutput.getMin(),intensityOutput.getMax(), 0.0, 1.0),255);
     }else{
         ofSetColor(255,64);
     }
     ofDrawCircle(0, 0, innerRadius);
     
     ofPopMatrix();
+    
+}
+
+void ledSynth::drawGui(){
+    ImGui::SetNextWindowSize(ofVec2f(200,100), ImGuiSetCond_FirstUseEver);
+    ImGui::SetWindowPos(position.get());
+    char buf[128];
+    sprintf(buf, "Node %i", ownID.get());
+    ImGui::Begin(buf, &guiShown);
+    int remoteIDGui = remoteID.get();
+    if(ImGui::DragInt("Remote ID", &remoteIDGui, 1, 0, 9))
+        remoteID.set(remoteIDGui);
+    ImGui::End();
+    
 }
 
 void ledSynth::receivedData(NSData *data )
@@ -141,7 +154,7 @@ void ledSynth::receivedData(NSData *data )
 }
 
 void ledSynth::updateHardwareValue(ofAbstractParameter &param){
-    if(updateHardware){
+    if(updateHardware && canSend){
         int i = 0;
         for(auto p : hardware){
             if(p.get()->getName() == param.getName()){

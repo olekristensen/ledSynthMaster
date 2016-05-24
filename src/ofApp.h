@@ -25,8 +25,24 @@
 #include "ofMain.h"
 #include "ofxRFduinoApp.h"
 #include "ledSynth.h"
-#include "ofxGui.h"
+#include "ofxImGui.h"
 #import  "BLEDelegate.h"
+#include "BaseTheme.h"
+
+class GuiTheme : public BaseTheme
+{
+public:
+    
+    GuiTheme()
+    {
+        col_main_text = ofColor::darkGrey;
+        col_main_head = ofColor(250,250,180,220);
+        col_main_area = ofColor(225,225,200,200);
+        col_win_popup = ofColor::black;
+        col_win_backg = ofColor(255,255,200,200);
+    }
+    
+};
 
 class ofApp : public ofBaseApp, public ofxRFduinoApp {
 
@@ -63,5 +79,31 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     
     BLEDelegate *ble;
     vector<ledSynth*> ledSynths;
-        
+    
+    ofxImGui gui;
+    bool showNodeGuis;
+    
+    ofImage digitalWeatherImage;
+
+    unsigned int kelvinCold;
+    unsigned int kelvinWarm;
+    
+    float kelvinWarmRange;
+    float kelvinColdRange;
+    float temperatureSpeed;
+    float temperatureTime;
+    float temperatureSpread;
+    
+    float brightnessRangeFrom;
+    float brightnessRangeTo;
+    float brightnessSpeed;
+    float brightnessTime;
+    float brightnessSpread;
+    
+    float timeOffset = 100.0;
+    float lastTemperatureManipulationSeconds = 0;
+    float lastBrightnessManipulationSeconds = 0;
+    float manipulationTimeoutSeconds = 30.0;
+
+
 };

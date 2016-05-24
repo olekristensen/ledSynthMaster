@@ -37,6 +37,32 @@ void ofApp::setup(){
     fontStatus.load("fonts/Avenir.ttc", 10, true, true, true);
     fontNode.load("fonts/Avenir Next.ttc", 10, true, true, true);
     
+    gui.setup(new GuiTheme());
+    ImGui::GetIO().Fonts->AddFontFromFileTTF(ofToDataPath("fonts/Avenir.ttc", true).c_str(), 10, NULL,  ImGui::GetIO().Fonts->GetGlyphRangesDefault());
+//    ImGui::GetIO().Fonts->GetTexDataAsRGBA32();
+    //ImGui::GetIO().Fonts->AddFontFromFileTTF(ofToDataPath("fonts/Avenir Next.ttc", true).c_str(), ImGui::GetIO().Fonts->Fonts.Size);
+//    ImGui::GetIO().Fonts->Build();
+    
+    
+    // FAKE NODES
+    
+    for (int i = 1; i < 10; i++){
+    ledSynth *l = new ledSynth();
+        l->setPeripheral(NULL);
+        l->canSend = false;
+        l->ownID = i;
+        l->remoteID = i;
+        ledSynths.push_back(l);
+    }
+    
+    // Digital Weather
+    
+    digitalWeatherImage.allocate(1024, 1024, OF_IMAGE_COLOR);
+    
+    kelvinColdRange = kelvinCold = 6500;
+    kelvinWarmRange = kelvinWarm = 1800;
+
+
 }
 
 void ofApp::exit(){
@@ -105,8 +131,54 @@ void ofApp::draw(){
     
     ofBackgroundGradient(ofColor::lightGrey, ofColor::whiteSmoke);
     
-    // Nodes
+    gui.begin();
+
+    // Guis
     
+    ImGui::SetWindowPos(ofVec2f(0,0));
+    ImGui::SetWindowSize(ofVec2f(200,ofGetHeight()));
+    ImGui::SetWindowCollapsed(false);
+    
+    ImGui::Checkbox("Show Node Guis", &showNodeGuis);
+    ImGui::TextUnformatted("Digital Weather");
+    ImGui::DragFloatRange2("Temperature Range", &kelvinWarmRange, &kelvinColdRange, 1.0, kelvinWarm*1.0, kelvinCold*1.0, "%.0f");
+    ImGui::SliderFloat("Temperature Speed", &temperatureSpeed, 0.0, 1.0);
+    ImGui::SliderFloat("Temperature Spread", &temperatureSpread, 0.0, 1.0);
+
+    // Digital Weather
+    
+    double temperatureSpreadCubic = powf(temperatureSpread, 3);
+    double brightnessSpreadCubic = powf(brightnessSpread, 3);
+    
+    /*
+    int imageWidth = perlinNoiseImage.getWidth();
+    int imageHeight = perlinNoiseImage.getHeight();
+    
+    for(int x = 0; x < imageWidth; x++)
+    {
+        for(int y = 0; y < imageHeight; y++)
+        {
+            double xMapped = ofMap(x, 0, imageWidth, tesselationRect.getMinX(), tesselationRect.getMaxX());
+            double yMapped = ofMap(y, imageHeight, 0, tesselationRect.getMinY(), tesselationRect.getMaxY());
+            
+            float brightness = ofNoise(xMapped*brightnessSpreadCubic, yMapped*brightnessSpreadCubic, brightnessTime);
+            brightness = ofMap(brightness, 0, 1, brightnessRangeFrom, brightnessRangeTo);
+            
+            float tempNoise = ofNoise(xMapped*temperatureSpreadCubic, yMapped*temperatureSpreadCubic, temperatureTime);
+            unsigned int temp = round(ofMap(tempNoise, 0, 1, kelvinWarmRange, kelvinColdRange));
+            
+            ofColor c = LedFixture::temperatureToColor(temp);
+            c *= brightness;
+            
+            digitalWeatherImage.setColor(x,y,c);
+        }
+    }
+    digitalWeatherImage.update();
+*/
+    
+    
+    // Nodes
+
     ofPushMatrix();
     float scale = ofGetWidth() / 2.0;
     cam.begin();
@@ -114,11 +186,11 @@ void ofApp::draw(){
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
         l->draw();
-        ofSetColor(0, 0, 0, 64);
+        ofSetColor((l->intensityOutput > l->intensityOutput.getMax()/2)?0:255, 200);
         ofPushMatrix();
         ofTranslate(l->position.get());
         ofScale(1/scale,1/scale,1/scale);
-        fontNode.drawStringAsShapes(ofToString(l->ownID), -fontNode.stringWidth(ofToString(l->ownID))*0.55, -fontNode.stringHeight(ofToString(l->ownID))*0.35);
+        fontNode.drawStringAsShapes(ofToString(l->ownID), -fontNode.stringWidth(ofToString(l->ownID))*0.55, -fontNode.stringHeight(ofToString(l->ownID))*0.55);
         ofPopMatrix();
         
     }
@@ -149,26 +221,27 @@ void ofApp::draw(){
     cam.end();
     ofPopMatrix();
     
-    // Guis
-    
-    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
-        ledSynth * l = *it;
-        l->gui.draw();
+    if(showNodeGuis) {
+        for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
+            ledSynth * l = *it;
+            l->drawGui();
+        }
     }
+    
+    gui.end();
     
     // Status bar
     
     string status = ([ble isLECapableHardware]?"Bluetooth LE supported":"No Bluetooth LE support");
     status += "\n" + ofToString(ledSynth::nextIndex) + " devices connected";
-    status += "\nFPS: " + ofToString(ofGetFrameRate(), 2);
     
     float statusbarMargin = 20;
     float statusbarHeight = fontStatus.stringHeight(status) + (statusbarMargin * 2.0);
     ofSetColor(255, 200);
-    ofDrawRectangle(0, ofGetHeight()-statusbarHeight, ofGetWidth(), statusbarHeight);
+    ofDrawRectangle(200, ofGetHeight()-statusbarHeight, ofGetWidth(), statusbarHeight);
     ofSetColor(0, 127);
     ofPushMatrix();
-    ofTranslate(statusbarMargin, (ofGetHeight()-statusbarHeight)+32);
+    ofTranslate(statusbarMargin+200, (ofGetHeight()-statusbarHeight)+32);
     fontStatus.drawString(status, 0, 0);
     ofPopMatrix();
 
@@ -264,12 +337,12 @@ void ofApp::didDiscoverRFduino(CBPeripheral *peripheral, NSDictionary *advertise
 
 void ofApp::didUpdateDiscoveredRFduino(CBPeripheral *peripheral)
 {
-    ofLogNotice() << " didUpdateDiscoveredRFduino " << endl;
+    ofLogNotice(__FUNCTION__) << [peripheral identifier] << endl;
 }
 
 void ofApp::didConnectRFduino(CBPeripheral *peripheral)
 {
-    ofLogNotice() << " didConnectRFduino " << endl;
+    ofLogNotice(__FUNCTION__) << [peripheral identifier] << endl;
     
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
@@ -285,7 +358,7 @@ void ofApp::didConnectRFduino(CBPeripheral *peripheral)
 
 void ofApp::disconnectRFduino(CBPeripheral *peripheral)
 {
-    ofLogNotice() << " disconnectRFduino " << endl;
+    ofLogNotice(__FUNCTION__) << [peripheral identifier] << endl;
     
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
@@ -301,7 +374,7 @@ void ofApp::disconnectRFduino(CBPeripheral *peripheral)
 
 void ofApp::didLoadServiceRFduino(CBPeripheral *peripheral)
 {
-    ofLogNotice() << " didLoadServiceRFduino " << endl;
+    ofLogNotice(__FUNCTION__) << [peripheral identifier] << endl;
     
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
@@ -316,7 +389,7 @@ void ofApp::didLoadServiceRFduino(CBPeripheral *peripheral)
 
 void ofApp::didDisconnectRFduino(CBPeripheral *peripheral)
 {
-    ofLogNotice() << " didDisconnectRFduino " << endl;
+    ofLogNotice(__FUNCTION__) << [peripheral identifier] << endl;
     
     bool found = false;
     std::vector<ledSynth*>::iterator it = ledSynths.begin();

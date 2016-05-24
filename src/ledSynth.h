@@ -11,7 +11,7 @@
 
 #include "ofMain.h"
 #include "ofxRFduino.h"
-#include "ofxGui.h"
+#include "ofxImGui.h"
 #include <EasyTransfer.h>
 #include <string>       // std::string
 #include <iostream>     // std::cout
@@ -116,6 +116,8 @@ public:
         0.5944, 0.7414, 1.0000 /* 10000K */
     };
     
+    int temperatureVisualisationOffset = 1000;
+    
     ofFloatColor temperatureToColor(int temp)
     {
         
@@ -217,8 +219,8 @@ public:
         mixRemote,
         intensityOutput,
         intensityFader,
-        mixNoise,
         movementSensorLevel,
+        mixNoise,
         lightSensorLightLevel,
         temperatureFader,
         temperatureOutput
@@ -239,11 +241,16 @@ public:
     
     void setBounds(ofRectangle newBounds);
     
+    void drawGui();
+    
     float *buffer;
     ofImage *img;
     std::queue <char> inputQueue;
     
-    ofxPanel gui;
+    // GUI
+    
+    bool guiShown = false;
+    
 
 private:
     
