@@ -166,20 +166,35 @@ void ofApp::draw(){
     
     dispatch_apply( imageHeight, dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^(size_t y){
         
-        double yMapped = ofMap(y, imageHeight, 0, -10.0, 10.0);
-
         auto line = pix.getLine(y);
         
         for (int x = 0; x < imageWidth ; x++) {
             
-            double xMapped = ofMap(x, 0, imageWidth, -10.0, 10.0);
-            
+            float s=x*1.0/imageWidth;
+            float t=y*1.0/imageHeight;
 
+            float multiplier = 1.0 / TWO_PI;
+            float nx = cos( s * TWO_PI ) * multiplier;
+            float ny = cos( t * TWO_PI ) * multiplier;
+            float nz = sin( s * TWO_PI ) * multiplier;
+            float nw = sin( t * TWO_PI ) * multiplier;
             
-            float brightness = ofNoise(xMapped*brightnessSpreadCubic, yMapped*brightnessSpreadCubic, brightnessTime);
-            brightness = ofMap(brightness, 0, 1, brightnessRangeFrom, brightnessRangeTo);
+            float size = 10.0;
+            float brightnessSize = size * brightnessSpreadCubic;
             
-            float tempNoise = ofNoise(xMapped*temperatureSpreadCubic, yMapped*temperatureSpreadCubic, temperatureTime);
+            float brightness = ofNoise((nx*brightnessSize)+brightnessTime,
+                                       (ny*brightnessSize)+brightnessTime,
+                                       (nz*brightnessSize)+brightnessTime,
+                                       (nw*brightnessSize)+brightnessTime);
+            brightness = ofMap(brightness, 0.0, 1.0, brightnessRangeFrom, brightnessRangeTo);
+            
+            float temperatureSize = size * temperatureSpreadCubic;
+
+            float tempNoise = ofNoise(
+                                      (nx*temperatureSize)+temperatureTime,
+                                      (ny*temperatureSize)+temperatureTime,
+                                      (nz*temperatureSize)+temperatureTime,
+                                      (nw*temperatureSize)+temperatureTime);
             unsigned int temp = round(ofMap(tempNoise, 0, 1, kelvinWarmRange, kelvinColdRange));
             
             ofFloatColor c = ledSynth::temperatureToColor(temp);
