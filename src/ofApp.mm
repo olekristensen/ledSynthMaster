@@ -21,6 +21,7 @@
  */
 
 #include "ofApp.h"
+#include <dispatch/dispatch.h>
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -57,12 +58,13 @@ void ofApp::setup(){
     
     // Digital Weather
     
-    digitalWeatherImage.allocate(1024, 1024, OF_IMAGE_COLOR);
+    digitalWeatherImage.allocate(640, 640, OF_IMAGE_COLOR);
     
     kelvinColdRange = kelvinCold = 6500;
     kelvinWarmRange = kelvinWarm = 1800;
-
-
+    
+    layout();
+    
 }
 
 void ofApp::exit(){
@@ -136,30 +138,43 @@ void ofApp::draw(){
     // Guis
     
     ImGui::SetWindowPos(ofVec2f(0,0));
-    ImGui::SetWindowSize(ofVec2f(200,ofGetHeight()));
+    ImGui::SetWindowSize(ofVec2f(guiColumnWidth,ofGetHeight()));
     ImGui::SetWindowCollapsed(false);
     
     ImGui::Checkbox("Show Node Guis", &showNodeGuis);
+
+    // Digital Weather
+    
     ImGui::TextUnformatted("Digital Weather");
+    ImGui::Text("FPS %.3f", ofGetFrameRate());
+
     ImGui::DragFloatRange2("Temperature Range", &kelvinWarmRange, &kelvinColdRange, 1.0, kelvinWarm*1.0, kelvinCold*1.0, "%.0f");
     ImGui::SliderFloat("Temperature Speed", &temperatureSpeed, 0.0, 1.0);
     ImGui::SliderFloat("Temperature Spread", &temperatureSpread, 0.0, 1.0);
 
-    // Digital Weather
-    
+    ImGui::DragFloatRange2("Brightness Range", &brightnessRangeFrom, &brightnessRangeTo, 0.001, 0.0, 1.0, "%.3f");
+    ImGui::SliderFloat("Brightness Speed", &brightnessSpeed, 0.0, 1.0);
+    ImGui::SliderFloat("Brightness Spread", &brightnessSpread, 0.0, 1.0);
+
     double temperatureSpreadCubic = powf(temperatureSpread, 3);
     double brightnessSpreadCubic = powf(brightnessSpread, 3);
     
-    /*
-    int imageWidth = perlinNoiseImage.getWidth();
-    int imageHeight = perlinNoiseImage.getHeight();
+    int imageWidth = digitalWeatherImage.getWidth();
+    int imageHeight = digitalWeatherImage.getHeight();
     
-    for(int x = 0; x < imageWidth; x++)
-    {
-        for(int y = 0; y < imageHeight; y++)
-        {
-            double xMapped = ofMap(x, 0, imageWidth, tesselationRect.getMinX(), tesselationRect.getMaxX());
-            double yMapped = ofMap(y, imageHeight, 0, tesselationRect.getMinY(), tesselationRect.getMaxY());
+    ofPixels &pix = digitalWeatherImage.getPixels();
+    
+    dispatch_apply( imageHeight, dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^(size_t y){
+        
+        double yMapped = ofMap(y, imageHeight, 0, -10.0, 10.0);
+
+        auto line = pix.getLine(y);
+        
+        for (int x = 0; x < imageWidth ; x++) {
+            
+            double xMapped = ofMap(x, 0, imageWidth, -10.0, 10.0);
+            
+
             
             float brightness = ofNoise(xMapped*brightnessSpreadCubic, yMapped*brightnessSpreadCubic, brightnessTime);
             brightness = ofMap(brightness, 0, 1, brightnessRangeFrom, brightnessRangeTo);
@@ -167,22 +182,36 @@ void ofApp::draw(){
             float tempNoise = ofNoise(xMapped*temperatureSpreadCubic, yMapped*temperatureSpreadCubic, temperatureTime);
             unsigned int temp = round(ofMap(tempNoise, 0, 1, kelvinWarmRange, kelvinColdRange));
             
-            ofColor c = LedFixture::temperatureToColor(temp);
+            ofFloatColor c = ledSynth::temperatureToColor(temp);
             c *= brightness;
-            
-            digitalWeatherImage.setColor(x,y,c);
+            pix.setColor(x, y, c);
+
         }
-    }
-    digitalWeatherImage.update();
-*/
+
+    });
     
+    float now = ofGetElapsedTimef() + timeOffset;
+    temperatureTime += powf(temperatureSpeed,8) * ofGetLastFrameTime();
+    brightnessTime += powf(brightnessSpeed,8) * ofGetLastFrameTime();
+
+//    digitalWeatherImage.setFromPixels(pix);
+    digitalWeatherImage.update();
+
+    ofPushView();
+
+    ofViewport(weatherRect);
+
+    ofSetColor(255,255);
     
     // Nodes
 
     ofPushMatrix();
-    float scale = ofGetWidth() / 2.0;
+    float scale = ofGetViewportWidth() / 2.0;
     cam.begin();
     ofScale(scale, scale, scale);
+    
+    digitalWeatherImage.draw(-1, -1, 2, 2);
+
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
         l->draw();
@@ -220,6 +249,8 @@ void ofApp::draw(){
     
     cam.end();
     ofPopMatrix();
+    ofViewport();
+    ofPopView();
     
     if(showNodeGuis) {
         for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
@@ -238,13 +269,17 @@ void ofApp::draw(){
     float statusbarMargin = 20;
     float statusbarHeight = fontStatus.stringHeight(status) + (statusbarMargin * 2.0);
     ofSetColor(255, 200);
-    ofDrawRectangle(200, ofGetHeight()-statusbarHeight, ofGetWidth(), statusbarHeight);
+    ofDrawRectangle(guiColumnWidth, ofGetHeight()-statusbarHeight, ofGetWidth(), statusbarHeight);
     ofSetColor(0, 127);
     ofPushMatrix();
-    ofTranslate(statusbarMargin+200, (ofGetHeight()-statusbarHeight)+32);
+    ofTranslate(statusbarMargin+guiColumnWidth, (ofGetHeight()-statusbarHeight)+32);
     fontStatus.drawString(status, 0, 0);
     ofPopMatrix();
 
+}
+
+void ofApp::layout(){
+    weatherRect.set(guiColumnWidth, 0, ofGetWindowWidth()-guiColumnWidth, ofGetWindowHeight());
 }
 
 //--------------------------------------------------------------
@@ -279,7 +314,7 @@ void ofApp::mouseReleased(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-
+    layout();
 }
 
 //--------------------------------------------------------------

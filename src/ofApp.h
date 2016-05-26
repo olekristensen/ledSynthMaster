@@ -51,6 +51,7 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     void setup();
     void update();
     void draw();
+    void layout();
     
     void keyPressed(int key);
     void keyReleased(int key);
@@ -76,6 +77,9 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     ofEasyCam cam;
     ofTrueTypeFont fontStatus;
     ofTrueTypeFont fontNode;
+    float guiColumnWidth = 300;
+    ofRectangle weatherRect;
+    
     
     BLEDelegate *ble;
     vector<ledSynth*> ledSynths;
@@ -90,15 +94,15 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     
     float kelvinWarmRange;
     float kelvinColdRange;
-    float temperatureSpeed;
-    float temperatureTime;
-    float temperatureSpread;
+    float temperatureSpeed = 0.3;
+    float temperatureTime = 0.0;
+    float temperatureSpread = 0.5;
     
-    float brightnessRangeFrom;
-    float brightnessRangeTo;
-    float brightnessSpeed;
-    float brightnessTime;
-    float brightnessSpread;
+    float brightnessRangeFrom = 0.0;
+    float brightnessRangeTo = 1.0;
+    float brightnessSpeed = 0.3;
+    float brightnessTime = 0.0;
+    float brightnessSpread = 0.5;
     
     float timeOffset = 100.0;
     float lastTemperatureManipulationSeconds = 0;

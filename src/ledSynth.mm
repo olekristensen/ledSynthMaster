@@ -123,7 +123,7 @@ void ledSynth::draw(){
     graph.draw();
     
     if(connected) {
-        ofSetColor(temperatureToColor(temperatureOutput+temperatureVisualisationOffset)*ofMap(intensityOutput,intensityOutput.getMin(),intensityOutput.getMax(), 0.0, 1.0),255);
+        ofSetColor(temperatureToColor(temperatureOutput)*ofMap(intensityOutput,intensityOutput.getMin(),intensityOutput.getMax(), 0.0, 1.0),255);
     }else{
         ofSetColor(255,64);
     }

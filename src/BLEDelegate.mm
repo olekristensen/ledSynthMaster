@@ -172,6 +172,8 @@
 - (void) startScan 
 {
     [manager scanForPeripheralsWithServices:[NSArray arrayWithObject:[CBUUID UUIDWithString:@"2220"]] options:nil];
+//    [manager scanForPeripheralsWithServices:nil options:nil];
+    
 }
 
 /*
