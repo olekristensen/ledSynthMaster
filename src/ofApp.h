@@ -35,11 +35,32 @@ public:
     
     GuiTheme()
     {
-        col_main_text = ofColor::darkGrey;
-        col_main_head = ofColor(250,250,180,220);
-        col_main_area = ofColor(225,225,200,200);
+        col_main_text = ledSynth::temperatureToColor(6300).getLerped(ofColor::black, 0.6);
+        col_main_head = ofColor(64,255,0);
+        col_main_area = ledSynth::temperatureToColor(6300);
         col_win_popup = ofColor::black;
-        col_win_backg = ofColor(255,255,200,200);
+        col_win_backg = ledSynth::temperatureToColor(6300).getLerped(ofColor::black, 0.075);
+        setup();
+    }
+    
+    void setup()
+    {
+        ImGuiStyle* style = &ImGui::GetStyle();
+        
+        style->WindowPadding            = ImVec2(15, 15);
+        style->FramePadding             = ImVec2(5, 5);
+        style->ItemSpacing              = ImVec2(12, 12);
+        style->ItemInnerSpacing         = ImVec2(6, 6);
+        //style->Alpha                    = 1.0f;
+        //style->WindowFillAlphaDefault   = 1.0f;
+        style->WindowRounding           = 0.0f;
+        style->FrameRounding            = 4.0f;
+        //style->IndentSpacing            = 6.0f;
+        //style->ColumnsMinSpacing        = 50.0f;
+        style->GrabMinSize              = 5.0f;
+        style->GrabRounding             = 0.0f;
+        //style->ScrollbarSize            = 12.0f;
+        //style->ScrollbarRounding        = 0.0f;
     }
     
 };
@@ -85,7 +106,7 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     vector<ledSynth*> ledSynths;
     
     ofxImGui gui;
-    bool showNodeGuis;
+    bool showNodeGuis = false;
     
     ofImage digitalWeatherImage;
 
@@ -97,17 +118,20 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     float temperatureSpeed = 0.3;
     float temperatureTime = 0.0;
     float temperatureSpread = 0.5;
+    ofVec2f temperatureOffset;
     
     float brightnessRangeFrom = 0.0;
     float brightnessRangeTo = 1.0;
     float brightnessSpeed = 0.3;
     float brightnessTime = 0.0;
     float brightnessSpread = 0.5;
+    ofVec2f brightnessOffset;
     
-    float timeOffset = 100.0;
+    float timeOffset = 1000.0;
     float lastTemperatureManipulationSeconds = 0;
     float lastBrightnessManipulationSeconds = 0;
     float manipulationTimeoutSeconds = 30.0;
 
-
+    float statusbarHeight = 68;
+    bool windowDidResize = false;
 };

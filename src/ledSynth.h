@@ -24,6 +24,8 @@ public:
     static ofFloatColor temperatureToColor(unsigned int temp)
     {
         
+        temp = ofClamp(temp, 1000, 10000);
+        
         float blackbodyColor[91*3] =
         {
             1.0000, 0.0425, 0.0000, // 1000K

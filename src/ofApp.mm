@@ -35,15 +35,17 @@ void ofApp::setup(){
     
     ofEnableAntiAliasing();
     
-    fontStatus.load("fonts/Avenir.ttc", 10, true, true, true);
-    fontNode.load("fonts/Avenir Next.ttc", 10, true, true, true);
+    fontStatus.load("fonts/OpenSans-Light.ttf", 10, true, true, true);
+    fontNode.load("fonts/OpenSans-Regular.ttf", 10, true, true, true);
     
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.Fonts->Clear();
+    io.Fonts->AddFontFromFileTTF(ofToDataPath("fonts/OpenSans-Light.ttf", true).c_str(), 16);
+    io.Fonts->AddFontFromFileTTF(ofToDataPath("fonts/OpenSans-Regular.ttf", true).c_str(), 16);
+    io.Fonts->AddFontFromFileTTF(ofToDataPath("fonts/OpenSans-Light.ttf", true).c_str(), 32);
+    io.Fonts->Build();
     gui.setup(new GuiTheme());
-    ImGui::GetIO().Fonts->AddFontFromFileTTF(ofToDataPath("fonts/Avenir.ttc", true).c_str(), 10, NULL,  ImGui::GetIO().Fonts->GetGlyphRangesDefault());
-//    ImGui::GetIO().Fonts->GetTexDataAsRGBA32();
-    //ImGui::GetIO().Fonts->AddFontFromFileTTF(ofToDataPath("fonts/Avenir Next.ttc", true).c_str(), ImGui::GetIO().Fonts->Fonts.Size);
-//    ImGui::GetIO().Fonts->Build();
-    
     
     // FAKE NODES
     
@@ -65,6 +67,10 @@ void ofApp::setup(){
     
     layout();
     
+    temperatureTime = brightnessTime = timeOffset;
+    temperatureOffset.set(0,0);
+    brightnessOffset.set(0,0);
+    
 }
 
 void ofApp::exit(){
@@ -77,6 +83,10 @@ void ofApp::update(){
     
     if(ofGetFrameNum() == 3){
         cam.disableMouseInput();
+    }
+    
+    if(windowDidResize){
+        layout();
     }
     int index = 0;
 
@@ -136,26 +146,53 @@ void ofApp::draw(){
     gui.begin();
 
     // Guis
-    
-    ImGui::SetWindowPos(ofVec2f(0,0));
-    ImGui::SetWindowSize(ofVec2f(guiColumnWidth,ofGetHeight()));
-    ImGui::SetWindowCollapsed(false);
-    
-    ImGui::Checkbox("Show Node Guis", &showNodeGuis);
+    ImGui::End();
 
-    // Digital Weather
+    ImGuiWindowFlags window_flags = 0;
+    window_flags |= ImGuiWindowFlags_NoTitleBar;
+    window_flags |= ImGuiWindowFlags_NoResize;
+    window_flags |= ImGuiWindowFlags_NoMove;
+    window_flags |= ImGuiWindowFlags_NoCollapse;
     
+    ImGui::SetNextWindowPos(ofVec2f(0,0));
+    ImGui::SetNextWindowSize(ofVec2f(guiColumnWidth,ofGetHeight()));
+    ImGui::Begin("Main###Debug", NULL, window_flags);
+    //ImGui::ShowTestWindow();
+    
+    // Digital Weather
+    ImGui::PushFont(ImGuiIO().Fonts->Fonts[2]);
     ImGui::TextUnformatted("Digital Weather");
+    ImGui::PopFont();
+
     ImGui::Text("FPS %.3f", ofGetFrameRate());
 
-    ImGui::DragFloatRange2("Temperature Range", &kelvinWarmRange, &kelvinColdRange, 1.0, kelvinWarm*1.0, kelvinCold*1.0, "%.0f");
-    ImGui::SliderFloat("Temperature Speed", &temperatureSpeed, 0.0, 1.0);
-    ImGui::SliderFloat("Temperature Spread", &temperatureSpread, 0.0, 1.0);
+    ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+    ImGui::TextUnformatted("Temperature");
+    ImGui::PopFont();
 
-    ImGui::DragFloatRange2("Brightness Range", &brightnessRangeFrom, &brightnessRangeTo, 0.001, 0.0, 1.0, "%.3f");
-    ImGui::SliderFloat("Brightness Speed", &brightnessSpeed, 0.0, 1.0);
-    ImGui::SliderFloat("Brightness Spread", &brightnessSpread, 0.0, 1.0);
+    ImGui::DragFloatRange2("Range##Temperature", &kelvinWarmRange, &kelvinColdRange, 1.0, kelvinWarm*1.0, kelvinCold*1.0, "%.0f");
+    ImGui::SliderFloat("Speed##Temperature", &temperatureSpeed, 0.0, 1.0);
+    ImGui::SliderFloat("Spread##Temperature", &temperatureSpread, 0.0, 1.0);
 
+    ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+    ImGui::TextUnformatted("Brightness");
+    ImGui::PopFont();
+
+    ImGui::DragFloatRange2("Range##Brightness", &brightnessRangeFrom, &brightnessRangeTo, 0.001, 0.0, 1.0, "%.3f");
+    ImGui::SliderFloat("Speed##Brightness", &brightnessSpeed, 0.0, 1.0);
+    ImGui::SliderFloat("Spread##Brightness", &brightnessSpread, 0.0, 1.0);
+    
+    ImGui::SliderFloat("Offset X##Brightness", &brightnessOffset.x, -1, 1);
+    ImGui::SliderFloat("Offset Y##Brightness", &brightnessOffset.y, -1, 1);
+    
+    ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+    ImGui::TextUnformatted("Options");
+    ImGui::PopFont();
+    
+    ImGui::Checkbox("Show Node Guis", &showNodeGuis);
+    
+
+    
     double temperatureSpreadCubic = powf(temperatureSpread, 3);
     double brightnessSpreadCubic = powf(brightnessSpread, 3);
     
@@ -166,10 +203,14 @@ void ofApp::draw(){
     
     dispatch_apply( imageHeight, dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^(size_t y){
         
+        double yMapped = ofMap(y, imageHeight, 0, -10.0, 10.0);
+
         auto line = pix.getLine(y);
         
         for (int x = 0; x < imageWidth ; x++) {
             
+            
+            /* 4D shape that wraps to make tiling
             float s=x*1.0/imageWidth;
             float t=y*1.0/imageHeight;
 
@@ -197,6 +238,17 @@ void ofApp::draw(){
                                       (nw*temperatureSize)+temperatureTime);
             unsigned int temp = round(ofMap(tempNoise, 0, 1, kelvinWarmRange, kelvinColdRange));
             
+            */
+            
+            double xMapped = ofMap(x, 0, imageWidth, -10.0, 10.0);
+            
+            float brightness = ofNoise((xMapped*brightnessSpreadCubic)+brightnessOffset.x, (yMapped*brightnessSpreadCubic)+brightnessOffset.y, brightnessTime);
+            brightness = ofMap(brightness, 0, 1, brightnessRangeFrom, brightnessRangeTo);
+            
+            float tempNoise = ofNoise(xMapped*temperatureSpreadCubic, yMapped*temperatureSpreadCubic, temperatureTime);
+            unsigned int temp = round(ofMap(tempNoise, 0, 1, kelvinWarmRange, kelvinColdRange));
+            
+
             ofFloatColor c = ledSynth::temperatureToColor(temp);
             c *= brightness;
             pix.setColor(x, y, c);
@@ -205,7 +257,6 @@ void ofApp::draw(){
 
     });
     
-    float now = ofGetElapsedTimef() + timeOffset;
     temperatureTime += powf(temperatureSpeed,8) * ofGetLastFrameTime();
     brightnessTime += powf(brightnessSpeed,8) * ofGetLastFrameTime();
 
@@ -273,7 +324,6 @@ void ofApp::draw(){
             l->drawGui();
         }
     }
-    
     gui.end();
     
     // Status bar
@@ -282,7 +332,7 @@ void ofApp::draw(){
     status += "\n" + ofToString(ledSynth::nextIndex) + " devices connected";
     
     float statusbarMargin = 20;
-    float statusbarHeight = fontStatus.stringHeight(status) + (statusbarMargin * 2.0);
+//    statusbarHeight = fontStatus.stringHeight(status) + (statusbarMargin * 2.0);
     ofSetColor(255, 200);
     ofDrawRectangle(guiColumnWidth, ofGetHeight()-statusbarHeight, ofGetWidth(), statusbarHeight);
     ofSetColor(0, 127);
@@ -294,7 +344,11 @@ void ofApp::draw(){
 }
 
 void ofApp::layout(){
-    weatherRect.set(guiColumnWidth, 0, ofGetWindowWidth()-guiColumnWidth, ofGetWindowHeight());
+    int windowHeight = (ofGetWindowWidth()-guiColumnWidth)+statusbarHeight;
+    ofSetWindowShape(ofGetWindowWidth(), windowHeight);
+    ofLogNotice(__FUNCTION__) << ofGetWindowRect() << endl;
+    windowDidResize = false;
+    weatherRect.set(guiColumnWidth, 0, ofGetWindowWidth()-guiColumnWidth, ofGetWindowHeight()-statusbarHeight);
 }
 
 //--------------------------------------------------------------
@@ -329,7 +383,7 @@ void ofApp::mouseReleased(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-    layout();
+    windowDidResize = true;
 }
 
 //--------------------------------------------------------------
