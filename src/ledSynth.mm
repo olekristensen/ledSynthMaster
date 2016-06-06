@@ -20,7 +20,7 @@ ledSynth::~ledSynth(){
 }
 
 void ledSynth::setup(){
-    position.set(ofVec2f(ofRandom(-1.0,1.0), ofRandom(-0.5,0.5)));
+    position.set(ofVec2f(ofRandom(-1.0,1.0), ofRandom(-1.0,1.0)));
     //gui.setup(parameters, "settings.xml");
     ofAddListener(parameters.parameterChangedE(), this, &ledSynth::updateHardwareValue);
 }
@@ -80,22 +80,21 @@ void ledSynth::update(){
 //--------------------------------------------------------------
 void ledSynth::draw(){
     
-    float innerRadius = 0.02;
-    float outerRadius = 0.08;
+    float innerRadius = 10;
+    float outerRadius = 30;
 
     ofPushMatrix();
-    ofTranslate(position.get());
     ofFill();
-    ofSetColor(200,255);
-    ofDrawCircle(0, 0, outerRadius);
+    ofSetColor(64,55);
+//    ofDrawCircle(0, 0, outerRadius);
     
     ofPath graph;
     ofPath graphBackground;
     
     graph.setFilled(true);
     graphBackground.setFilled(true);
-    graph.setColor(ofColor(233,255));
-    graphBackground.setColor(ofColor(180,255));
+    graph.setColor(ofColor(255,200));
+    graphBackground.setColor(ofColor(255,55));
     
     int i = 0;
     
@@ -118,16 +117,26 @@ void ledSynth::draw(){
     }
     graph.close();
     graphBackground.close();
-
     graphBackground.draw();
     graph.draw();
     
+    graphBackground.setFilled(false);
+    graphBackground.setStrokeColor(ofColor(255,64));
+    graphBackground.setStrokeWidth(1.0);
+    graphBackground.draw();
+
     if(connected) {
         ofSetColor(temperatureToColor(temperatureOutput)*ofMap(intensityOutput,intensityOutput.getMin(),intensityOutput.getMax(), 0.0, 1.0),255);
+        ofDrawCircle(0, 0, innerRadius);
     }else{
-        ofSetColor(255,64);
+        ofFill();
+        ofSetColor(temperatureToColor(temperatureNoise)*ofMap(intensityNoise,intensityNoise.getMin(),intensityNoise.getMax(), 0.0, 1.0),255);
+        ofDrawCircle(0, 0, innerRadius);
+        ofNoFill();
+        ofSetColor(255,200);
+        ofDrawCircle(0, 0, innerRadius);
+        ofFill();
     }
-    ofDrawCircle(0, 0, innerRadius);
     
     ofPopMatrix();
     

@@ -36,7 +36,7 @@ void ofApp::setup(){
     ofEnableAntiAliasing();
     
     fontStatus.load("fonts/OpenSans-Light.ttf", 10, true, true, true);
-    fontNode.load("fonts/OpenSans-Regular.ttf", 10, true, true, true);
+    fontNode.load("fonts/OpenSans-Regular.ttf", 11, true, true, true);
     
     ImGuiIO& io = ImGui::GetIO();
 
@@ -48,7 +48,7 @@ void ofApp::setup(){
     gui.setup(new GuiTheme());
     
     // FAKE NODES
-    
+    /*
     for (int i = 1; i < 10; i++){
     ledSynth *l = new ledSynth();
         l->setPeripheral(NULL);
@@ -57,10 +57,12 @@ void ofApp::setup(){
         l->remoteID = i;
         ledSynths.push_back(l);
     }
-    
+    */
     // Digital Weather
     
-    digitalWeatherImage.allocate(640, 640, OF_IMAGE_COLOR);
+    imageWidth = imageHeight = 640;
+    
+    digitalWeatherImage.allocate(imageWidth, imageHeight, OF_IMAGE_COLOR);
     
     kelvinColdRange = kelvinCold = 6500;
     kelvinWarmRange = kelvinWarm = 1800;
@@ -68,8 +70,9 @@ void ofApp::setup(){
     layout();
     
     temperatureTime = brightnessTime = timeOffset;
-    temperatureOffset.set(0,0);
-    brightnessOffset.set(0,0);
+    offset.set(0,0);
+    
+    draggedLedSynth = nullptr;
     
 }
 
@@ -165,6 +168,9 @@ void ofApp::draw(){
     ImGui::PopFont();
 
     ImGui::Text("FPS %.3f", ofGetFrameRate());
+    ImGui::SliderFloat("Offset X", &offset.x, -1, 1);
+    ImGui::SliderFloat("Offset Y", &offset.y, -1, 1);
+    
 
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
     ImGui::TextUnformatted("Temperature");
@@ -182,19 +188,14 @@ void ofApp::draw(){
     ImGui::SliderFloat("Speed##Brightness", &brightnessSpeed, 0.0, 1.0);
     ImGui::SliderFloat("Spread##Brightness", &brightnessSpread, 0.0, 1.0);
     
-    ImGui::SliderFloat("Offset X##Brightness", &brightnessOffset.x, -1, 1);
-    ImGui::SliderFloat("Offset Y##Brightness", &brightnessOffset.y, -1, 1);
-    
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
     ImGui::TextUnformatted("Options");
     ImGui::PopFont();
     
     ImGui::Checkbox("Show Node Guis", &showNodeGuis);
     
-
-    
-    double temperatureSpreadCubic = powf(temperatureSpread, 3);
-    double brightnessSpreadCubic = powf(brightnessSpread, 3);
+    temperatureSpreadCubic = powf(temperatureSpread, 3);
+    brightnessSpreadCubic = powf(brightnessSpread, 3);
     
     int imageWidth = digitalWeatherImage.getWidth();
     int imageHeight = digitalWeatherImage.getHeight();
@@ -203,55 +204,47 @@ void ofApp::draw(){
     
     dispatch_apply( imageHeight, dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^(size_t y){
         
-        double yMapped = ofMap(y, imageHeight, 0, -10.0, 10.0);
+        double yMapped = ofMap(y+(imageHeight*offset.y), imageHeight, 0, -10.0, 10.0);
+        
+        //double yMapped = fmodf(y+(imageHeight*offset.y), imageHeight);
 
         auto line = pix.getLine(y);
         
         for (int x = 0; x < imageWidth ; x++) {
             
-            
-            /* 4D shape that wraps to make tiling
-            float s=x*1.0/imageWidth;
-            float t=y*1.0/imageHeight;
+            double xMapped = ofMap(x+(imageWidth*offset.x), imageWidth, 0, -10.0, 10.0);
 
-            float multiplier = 1.0 / TWO_PI;
-            float nx = cos( s * TWO_PI ) * multiplier;
-            float ny = cos( t * TWO_PI ) * multiplier;
-            float nz = sin( s * TWO_PI ) * multiplier;
-            float nw = sin( t * TWO_PI ) * multiplier;
+            /*
+             // 4D shape that wraps to make tiling
+             float s=xMapped*1.0/imageWidth;
+             float t=yMapped*1.0/imageHeight;
+             
+             float multiplier = 10 / TWO_PI;
+             float nx = cos( s * TWO_PI ) * multiplier;
+             float ny = cos( t * TWO_PI ) * multiplier;
+             float nz = sin( s * TWO_PI ) * multiplier;
+             float nw = sin( t * TWO_PI ) * multiplier;
+             
+             float size = 10.0;
+             float brightnessSize = size * brightnessSpreadCubic;
+             
+             float brightness = ofNoise((nx*brightnessSize)+brightnessTime,
+             (ny*brightnessSize)+brightnessTime,
+             (nz*brightnessSize)+brightnessTime,
+             (nw*brightnessSize)+brightnessTime);
+             brightness = ofMap(brightness, 0.0, 1.0, brightnessRangeFrom, brightnessRangeTo);
+             
+             float temperatureSize = size * temperatureSpreadCubic;
+             
+             float tempNoise = ofNoise(
+             (nx*temperatureSize)+temperatureTime,
+             (ny*temperatureSize)+temperatureTime,
+             (nz*temperatureSize)+temperatureTime,
+             (nw*temperatureSize)+temperatureTime);
+             unsigned int temp = round(ofMap(tempNoise, 0, 1, kelvinWarmRange, kelvinColdRange));
+             */
             
-            float size = 10.0;
-            float brightnessSize = size * brightnessSpreadCubic;
-            
-            float brightness = ofNoise((nx*brightnessSize)+brightnessTime,
-                                       (ny*brightnessSize)+brightnessTime,
-                                       (nz*brightnessSize)+brightnessTime,
-                                       (nw*brightnessSize)+brightnessTime);
-            brightness = ofMap(brightness, 0.0, 1.0, brightnessRangeFrom, brightnessRangeTo);
-            
-            float temperatureSize = size * temperatureSpreadCubic;
-
-            float tempNoise = ofNoise(
-                                      (nx*temperatureSize)+temperatureTime,
-                                      (ny*temperatureSize)+temperatureTime,
-                                      (nz*temperatureSize)+temperatureTime,
-                                      (nw*temperatureSize)+temperatureTime);
-            unsigned int temp = round(ofMap(tempNoise, 0, 1, kelvinWarmRange, kelvinColdRange));
-            
-            */
-            
-            double xMapped = ofMap(x, 0, imageWidth, -10.0, 10.0);
-            
-            float brightness = ofNoise((xMapped*brightnessSpreadCubic)+brightnessOffset.x, (yMapped*brightnessSpreadCubic)+brightnessOffset.y, brightnessTime);
-            brightness = ofMap(brightness, 0, 1, brightnessRangeFrom, brightnessRangeTo);
-            
-            float tempNoise = ofNoise(xMapped*temperatureSpreadCubic, yMapped*temperatureSpreadCubic, temperatureTime);
-            unsigned int temp = round(ofMap(tempNoise, 0, 1, kelvinWarmRange, kelvinColdRange));
-            
-
-            ofFloatColor c = ledSynth::temperatureToColor(temp);
-            c *= brightness;
-            pix.setColor(x, y, c);
+            pix.setColor(x, y, getColor(xMapped, yMapped));
 
         }
 
@@ -263,33 +256,29 @@ void ofApp::draw(){
 //    digitalWeatherImage.setFromPixels(pix);
     digitalWeatherImage.update();
 
-    ofPushView();
-
-    ofViewport(weatherRect);
-
     ofSetColor(255,255);
     
     // Nodes
 
-    ofPushMatrix();
-    float scale = ofGetViewportWidth() / 2.0;
-    cam.begin();
-    ofScale(scale, scale, scale);
-    
-    digitalWeatherImage.draw(-1, -1, 2, 2);
+    digitalWeatherImage.draw(weatherRect);
 
     for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
         ledSynth * l = *it;
+        ofPushMatrix();
+        
+        ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
+        
+        ofTranslate(position.x, position.y);
+        l->intensityNoise = 1000*getIntensity(l->position.get());
+        l->temperatureNoise = getTemperature(l->position.get());
+        
         l->draw();
         ofSetColor((l->intensityOutput > l->intensityOutput.getMax()/2)?0:255, 200);
-        ofPushMatrix();
-        ofTranslate(l->position.get());
-        ofScale(1/scale,1/scale,1/scale);
-        fontNode.drawStringAsShapes(ofToString(l->ownID), -fontNode.stringWidth(ofToString(l->ownID))*0.55, -fontNode.stringHeight(ofToString(l->ownID))*0.55);
+        fontNode.drawStringAsShapes(ofToString(l->ownID), -fontNode.stringWidth(ofToString(l->ownID))*0.55, fontNode.stringHeight(ofToString(l->ownID))*0.55);
         ofPopMatrix();
         
     }
-    
+
     // Connections
     
     ofSetColor(63,255);
@@ -312,11 +301,6 @@ void ofApp::draw(){
             }
         }
     }
-    
-    cam.end();
-    ofPopMatrix();
-    ofViewport();
-    ofPopView();
     
     if(showNodeGuis) {
         for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
@@ -351,6 +335,55 @@ void ofApp::layout(){
     weatherRect.set(guiColumnWidth, 0, ofGetWindowWidth()-guiColumnWidth, ofGetWindowHeight()-statusbarHeight);
 }
 
+
+ofVec2f ofApp::getMappedCoordsFromImage(ofVec2f v){
+    ofVec2f iVec;
+    iVec.x = ofMap(v.x+(imageWidth*offset.x), imageWidth, 0, -10.0, 10.0);
+    iVec.y = ofMap(v.y+(imageHeight*offset.y), imageHeight, 0, -10.0, 10.0);
+    return iVec;
+}
+
+ofVec2f ofApp::getMappedCoordsFromNormalised(ofVec2f v){
+    ofVec2f iVec;
+    iVec.x = ofMap(v.x+(offset.x), 1.0, -1.0, -10.0, 10.0);
+    iVec.y = ofMap(v.y+(offset.y), 1.0, -1.0, -10.0, 10.0);
+    return iVec;
+}
+
+unsigned int ofApp::getTemperature(ofVec2f v){
+    ofVec2f vScaled = getMappedCoordsFromNormalised(v);
+    return getTemperature(vScaled.x, vScaled.y);
+}
+
+float ofApp::getIntensity(ofVec2f v){
+    ofVec2f vScaled = getMappedCoordsFromNormalised(v);
+    return getIntensity(vScaled.x, vScaled.y);
+}
+
+ofFloatColor ofApp::getColor(ofVec2f v){
+    ofVec2f vScaled = getMappedCoordsFromNormalised(v);
+    return getColor(vScaled.x,vScaled.y);
+}
+
+unsigned int ofApp::getTemperature(float x, float y){
+    float tempNoise = ofNoise(x*temperatureSpreadCubic, y*temperatureSpreadCubic, temperatureTime);
+    return round(ofMap(tempNoise, 0, 1, kelvinWarmRange, kelvinColdRange));
+}
+
+float ofApp::getIntensity(float x, float y){
+    float brightness = ofNoise(x*brightnessSpreadCubic, y*brightnessSpreadCubic, brightnessTime);
+    return ofMap(brightness, 0, 1, brightnessRangeFrom, brightnessRangeTo);
+}
+
+ofFloatColor ofApp::getColor(float x, float y){
+    float brightness = getIntensity(x, y);
+    int temp = getTemperature(x, y);
+    ofFloatColor c = ledSynth::temperatureToColor(temp);
+    c *= brightness;
+    return c;
+}
+
+
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 
@@ -368,17 +401,41 @@ void ofApp::mouseMoved(int x, int y){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
+    if(draggedLedSynth != nullptr){
+        
+        ofVec2f mouseVec(x, y);
+        
+        ofVec2f position = (mouseVec - weatherRect.getCenter()) / (weatherRect.getWidth()*0.5);
 
+        draggedLedSynth->position = position;
+    
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-    
+
+    if(draggedLedSynth == nullptr){
+            for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
+            ledSynth * l = *it;
+        
+            ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
+
+            if(position.distance(ofVec2f(x,y)) < 10.0){
+                draggedLedSynth = l;
+            }
+        
+        }
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
 
+    if(draggedLedSynth != nullptr){
+        draggedLedSynth = nullptr;
+    }
+    
 }
 
 //--------------------------------------------------------------

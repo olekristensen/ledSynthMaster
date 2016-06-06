@@ -28,6 +28,8 @@
 #include "ofxImGui.h"
 #import  "BLEDelegate.h"
 #include "BaseTheme.h"
+#include "ofxCv.h"
+
 
 class GuiTheme : public BaseTheme
 {
@@ -93,6 +95,15 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     void receivedData( unsigned char *data);
     void disconnectRFduino(CBPeripheral *rfduino);
     
+    ofVec2f getMappedCoordsFromImage(ofVec2f v);
+    ofVec2f getMappedCoordsFromNormalised(ofVec2f v);
+    unsigned int getTemperature(ofVec2f v);
+    float getIntensity(ofVec2f v);
+    ofFloatColor getColor(ofVec2f v);
+    unsigned int getTemperature(float x, float y);
+    float getIntensity(float x, float y);
+    ofFloatColor getColor(float x, float y);
+    
     void onBluetooth();
     
     ofEasyCam cam;
@@ -101,31 +112,36 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     float guiColumnWidth = 300;
     ofRectangle weatherRect;
     
-    
     BLEDelegate *ble;
     vector<ledSynth*> ledSynths;
+    
+    ledSynth * draggedLedSynth;
     
     ofxImGui gui;
     bool showNodeGuis = false;
     
     ofImage digitalWeatherImage;
+    int imageWidth;
+    int imageHeight;
 
     unsigned int kelvinCold;
     unsigned int kelvinWarm;
     
+    ofVec2f offset;
+
     float kelvinWarmRange;
     float kelvinColdRange;
     float temperatureSpeed = 0.3;
     float temperatureTime = 0.0;
     float temperatureSpread = 0.5;
-    ofVec2f temperatureOffset;
+    double temperatureSpreadCubic = 0.0;
     
     float brightnessRangeFrom = 0.0;
     float brightnessRangeTo = 1.0;
     float brightnessSpeed = 0.3;
     float brightnessTime = 0.0;
     float brightnessSpread = 0.5;
-    ofVec2f brightnessOffset;
+    double brightnessSpreadCubic = 0.0;
     
     float timeOffset = 1000.0;
     float lastTemperatureManipulationSeconds = 0;
@@ -134,4 +150,10 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
 
     float statusbarHeight = 68;
     bool windowDidResize = false;
+    
+    ofVideoGrabber camera;
+    
+    ofxCv::FlowFarneback fb;
+    ofxCv::FlowPyrLK lk;
+    ofxCv::Flow* curFlow;
 };
