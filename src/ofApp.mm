@@ -46,7 +46,7 @@ void ofApp::setup(){
     io.Fonts->AddFontFromFileTTF(ofToDataPath("fonts/OpenSans-Light.ttf", true).c_str(), 32);
     io.Fonts->Build();
     gui.setup(new GuiTheme());
-    
+        
     // FAKE NODES
     /*
     for (int i = 1; i < 10; i++){
@@ -73,7 +73,9 @@ void ofApp::setup(){
     offset.set(0,0);
     
     draggedLedSynth = nullptr;
-    
+
+    camera.setup(320, 240);
+    camera.setUseTexture(true);
 }
 
 void ofApp::exit(){
@@ -83,6 +85,25 @@ void ofApp::exit(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    
+    camera.update();
+    
+    if(camera.isFrameNew()) {
+        /*
+        curFlow = &fb;
+        fb.setPyramidScale(fbPyrScale);
+        fb.setNumLevels(fbLevels);
+        fb.setWindowSize(fbWinSize);
+        fb.setNumIterations(fbIterations);
+        fb.setPolyN(fbPolyN);
+        fb.setPolySigma(fbPolySigma);
+        fb.setUseGaussian(fbUseGaussian);
+        
+        // you can use Flow polymorphically
+        curFlow->calcOpticalFlow(camera);
+         */
+    }
+
     
     if(ofGetFrameNum() == 3){
         cam.disableMouseInput();
@@ -170,7 +191,6 @@ void ofApp::draw(){
     ImGui::Text("FPS %.3f", ofGetFrameRate());
     ImGui::SliderFloat("Offset X", &offset.x, -1, 1);
     ImGui::SliderFloat("Offset Y", &offset.y, -1, 1);
-    
 
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
     ImGui::TextUnformatted("Temperature");
@@ -187,6 +207,12 @@ void ofApp::draw(){
     ImGui::DragFloatRange2("Range##Brightness", &brightnessRangeFrom, &brightnessRangeTo, 0.001, 0.0, 1.0, "%.3f");
     ImGui::SliderFloat("Speed##Brightness", &brightnessSpeed, 0.0, 1.0);
     ImGui::SliderFloat("Spread##Brightness", &brightnessSpread, 0.0, 1.0);
+    
+    
+    //FIXME: Camera texture does not draw
+    
+    cameraTextureSourceID = camera.getTexture().getTextureData().textureID;
+    ImGui::Image((void*)&cameraTextureSourceID, ofVec2f(camera.getWidth(), camera.getHeight()));
     
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
     ImGui::TextUnformatted("Options");

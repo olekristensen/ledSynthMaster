@@ -147,11 +147,16 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     float lastTemperatureManipulationSeconds = 0;
     float lastBrightnessManipulationSeconds = 0;
     float manipulationTimeoutSeconds = 30.0;
-
+    
     float statusbarHeight = 68;
     bool windowDidResize = false;
     
+    float fbPyrScale, lkQualityLevel, fbPolySigma;
+    int fbLevels, lkWinSize, fbIterations, fbPolyN, fbWinSize, lkMaxLevel, lkMaxFeatures, lkMinDistance;
+    bool fbUseGaussian, usefb;
+
     ofVideoGrabber camera;
+    GLuint cameraTextureSourceID;
     
     ofxCv::FlowFarneback fb;
     ofxCv::FlowPyrLK lk;
