@@ -45,9 +45,68 @@ void ofApp::setup(){
     io.Fonts->AddFontFromFileTTF(ofToDataPath("fonts/OpenSans-Regular.ttf", true).c_str(), 16);
     io.Fonts->AddFontFromFileTTF(ofToDataPath("fonts/OpenSans-Light.ttf", true).c_str(), 32);
     io.Fonts->Build();
+    
     gui.setup(new GuiTheme());
-        
-    // FAKE NODES
+    
+    ImGuiStyle * style = &ImGui::GetStyle();
+    
+    style->WindowPadding            = ImVec2(15, 15);
+    style->WindowRounding           = 5.0f;
+    style->FramePadding             = ImVec2(5, 5);
+    style->FrameRounding            = 4.0f;
+    style->ItemSpacing              = ImVec2(12, 8);
+    style->ItemInnerSpacing         = ImVec2(8, 6);
+    style->IndentSpacing            = 25.0f;
+    style->ScrollbarSize            = 15.0f;
+    style->ScrollbarRounding        = 9.0f;
+    style->GrabMinSize              = 5.0f;
+    style->GrabRounding             = 3.0f;
+    
+    style->Colors[ImGuiCol_Text]                  = ImVec4(0.40f, 0.39f, 0.38f, 1.00f);
+    style->Colors[ImGuiCol_TextDisabled]          = ImVec4(0.40f, 0.39f, 0.38f, 0.77f);
+    style->Colors[ImGuiCol_WindowBg]              = ImVec4(0.92f, 0.91f, 0.88f, 0.70f);
+    style->Colors[ImGuiCol_ChildWindowBg]         = ImVec4(1.00f, 0.98f, 0.95f, 0.58f);
+    style->Colors[ImGuiCol_PopupBg]               = ImVec4(0.92f, 0.91f, 0.88f, 0.92f);
+    style->Colors[ImGuiCol_Border]                = ImVec4(0.84f, 0.83f, 0.80f, 0.65f);
+    style->Colors[ImGuiCol_BorderShadow]          = ImVec4(0.92f, 0.91f, 0.88f, 0.00f);
+    style->Colors[ImGuiCol_FrameBg]               = ImVec4(1.00f, 0.98f, 0.95f, 1.00f);
+    style->Colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.99f, 1.00f, 0.40f, 0.78f);
+    style->Colors[ImGuiCol_FrameBgActive]         = ImVec4(0.26f, 1.00f, 0.00f, 1.00f);
+    style->Colors[ImGuiCol_TitleBg]               = ImVec4(1.00f, 0.98f, 0.95f, 1.00f);
+    style->Colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(1.00f, 0.98f, 0.95f, 0.75f);
+    style->Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style->Colors[ImGuiCol_MenuBarBg]             = ImVec4(1.00f, 0.98f, 0.95f, 0.47f);
+    style->Colors[ImGuiCol_ScrollbarBg]           = ImVec4(1.00f, 0.98f, 0.95f, 1.00f);
+    style->Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.00f, 0.00f, 0.00f, 0.21f);
+    style->Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.90f, 0.91f, 0.00f, 0.78f);
+    style->Colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style->Colors[ImGuiCol_ComboBg]               = ImVec4(1.00f, 0.98f, 0.95f, 1.00f);
+    style->Colors[ImGuiCol_CheckMark]             = ImVec4(0.25f, 1.00f, 0.00f, 0.80f);
+    style->Colors[ImGuiCol_SliderGrab]            = ImVec4(0.00f, 0.00f, 0.00f, 0.14f);
+    style->Colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style->Colors[ImGuiCol_Button]                = ImVec4(0.00f, 0.00f, 0.00f, 0.14f);
+    style->Colors[ImGuiCol_ButtonHovered]         = ImVec4(0.99f, 1.00f, 0.22f, 0.86f);
+    style->Colors[ImGuiCol_ButtonActive]          = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style->Colors[ImGuiCol_Header]                = ImVec4(0.25f, 1.00f, 0.00f, 0.76f);
+    style->Colors[ImGuiCol_HeaderHovered]         = ImVec4(0.25f, 1.00f, 0.00f, 0.86f);
+    style->Colors[ImGuiCol_HeaderActive]          = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style->Colors[ImGuiCol_Column]                = ImVec4(0.00f, 0.00f, 0.00f, 0.32f);
+    style->Colors[ImGuiCol_ColumnHovered]         = ImVec4(0.25f, 1.00f, 0.00f, 0.78f);
+    style->Colors[ImGuiCol_ColumnActive]          = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style->Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.00f, 0.00f, 0.00f, 0.04f);
+    style->Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.25f, 1.00f, 0.00f, 0.78f);
+    style->Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style->Colors[ImGuiCol_CloseButton]           = ImVec4(0.40f, 0.39f, 0.38f, 0.16f);
+    style->Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.40f, 0.39f, 0.38f, 0.39f);
+    style->Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.40f, 0.39f, 0.38f, 1.00f);
+    style->Colors[ImGuiCol_PlotLines]             = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
+    style->Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style->Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
+    style->Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style->Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
+    style->Colors[ImGuiCol_ModalWindowDarkening]  = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
+
+        // FAKE NODES
     /**
     for (int i = 1; i < 10; i++){
     ledSynth *l = new ledSynth();
@@ -64,9 +123,6 @@ void ofApp::setup(){
     imageWidth = imageHeight = 640;
     
     digitalWeatherImage.allocate(imageWidth, imageHeight, OF_IMAGE_COLOR);
-    
-    kelvinColdRange = kelvinCold = 6500;
-    kelvinWarmRange = kelvinWarm = 1800;
     
     layout();
     
@@ -94,7 +150,6 @@ void ofApp::setup(){
     camera.setDeviceID(deviceId);
     camera.setup(320, 320*9/16);
     cameraImage.allocate(camera.getWidth(), camera.getHeight(), OF_IMAGE_COLOR);
-    mirrorCamera = false;
     
     kalman.init(1/5000., 1/10.); // inverse of (smoothness, rapidness)
     
@@ -105,10 +160,7 @@ void ofApp::setup(){
     fbPolySigma = 1.5;
     fbWinSize = 32;
     fbUseGaussian = false;
-    offsetScale = 0.1;
     
-    globalNoiseLevel = 0.5;
-
 }
 
 void ofApp::exit(){
@@ -215,6 +267,7 @@ void ofApp::draw(){
     window_flags |= ImGuiWindowFlags_NoResize;
     window_flags |= ImGuiWindowFlags_NoMove;
     window_flags |= ImGuiWindowFlags_NoCollapse;
+    window_flags |= ImGuiWindowFlags_ShowBorders;
     
     ImGui::SetNextWindowPos(ofVec2f(0,0));
     ImGui::SetNextWindowSize(ofVec2f(guiColumnWidth,ofGetHeight()));
@@ -230,28 +283,28 @@ void ofApp::draw(){
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
     ImGui::TextUnformatted("Weather Level");
     ImGui::PopFont();
-    
-    ImGui::SliderFloat("Level##Weater", &globalNoiseLevel, 0.0, 1.0);
-    ImGui::SliderInt("Update interval millis", &hardwareUpdateIntervalMillis, 0, 1000);
+    ImGuiSliderFromParam(globalNoiseLevel);
+    ImGuiSliderFromParam(hardwareUpdateIntervalFps);
     for (auto l : ledSynths){
-        l->hardwareUpdateIntervalMillis = hardwareUpdateIntervalMillis;
+        l->hardwareUpdateIntervalMillis = 1000/hardwareUpdateIntervalFps;
     }
     
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
     ImGui::TextUnformatted("Temperature");
     ImGui::PopFont();
 
-    ImGui::DragFloatRange2("Range##Temperature", &kelvinWarmRange, &kelvinColdRange, 1.0, kelvinWarm*1.0, kelvinCold*1.0, "%.0f");
-    ImGui::SliderFloat("Speed##Temperature", &temperatureSpeed, 0.0, 1.0);
-    ImGui::SliderFloat("Spread##Temperature", &temperatureSpread, 0.0, 1.0);
+    ImGuiRangeFromParams(kelvinWarmRange, kelvinColdRange);
+    ImGuiSliderFromParam(temperatureSpeed);
+    ImGuiSliderFromParam(temperatureSpread);
 
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
     ImGui::TextUnformatted("Brightness");
     ImGui::PopFont();
 
-    ImGui::DragFloatRange2("Range##Brightness", &brightnessRangeFrom, &brightnessRangeTo, 0.001, 0.0, 1.0, "%.3f");
-    ImGui::SliderFloat("Speed##Brightness", &brightnessSpeed, 0.0, 1.0);
-    ImGui::SliderFloat("Spread##Brightness", &brightnessSpread, 0.0, 1.0);
+    ImGuiRangeFromParams(brightnessRangeFrom, brightnessRangeTo);
+
+    ImGuiSliderFromParam(brightnessSpeed);
+    ImGuiSliderFromParam(brightnessSpread);
     
     temperatureSpreadCubic = powf(temperatureSpread, 3);
     brightnessSpreadCubic = powf(brightnessSpread, 3);
@@ -411,10 +464,35 @@ void ofApp::draw(){
     
 
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+    ImGui::TextUnformatted("Presets");
+    ImGui::PopFont();
+
+    char strSaveFileName[128] = "Untitled";
+    ImGui::PushItemWidth(195);
+    ImGui::InputText("##PresetSaveFileName", strSaveFileName, 128);
+    ImGui::PopItemWidth();
+    ImGui::SameLine();
+    if(ImGui::Button("Save", ofVec2f(50,25))){
+        //TODO: save a new preset
+    }
+
+    static int item = -1;
+    ImGui::PushItemWidth(195);
+    ImGui::Combo("##PresetLoadFileName", &item, "First\0Second\0Third\0Fourth\0Fifth\0Sixth\0Seventh\0Eigth\0Ninth\0Tenth\0\0");   // Combo using values packed in a single constant string (for really quick combo)
+    ImGui::PopItemWidth();
+    ImGui::SameLine();
+    if(ImGui::Button("Load", ofVec2f(50,25))){
+        //TODO: load a new preset
+    }
+    
+    ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
     ImGui::TextUnformatted("Movement");
     ImGui::PopFont();
-    ImGui::Checkbox("Mirrored", &mirrorCamera);
-    ImGui::SliderFloat("Scale", &offsetScale, 0.0, 1.0);
+    bool mirrorCameraVal = mirrorCamera.get();
+    if(ImGui::Checkbox("Mirrored", &mirrorCameraVal)){
+        mirrorCamera.set(mirrorCameraVal);
+    }
+    ImGuiSliderFromParam(offsetScale);
     ImGui::InputFloat2("Offset", offset.getPtr());
     
     /*
@@ -762,11 +840,47 @@ void ofApp::didDisconnectRFduino(CBPeripheral *peripheral)
 void ofApp::ImGuiSliderFromParam(ofAbstractParameter &p){
     ofParameter<int> pInt;
     if(p.type() == pInt.type()){
-        pInt = p.cast<ofParameter<int>>();
-        int value = pInt;
-        if(ImGui::SliderInt(pInt.getName().c_str(), &value, pInt.getMin(), pInt.getMax())){
-            pInt.set(value);
+        ofParameter<int> &pIntValue = p.cast<int>();
+        int value = pIntValue;
+        if(ImGui::SliderInt(pIntValue.getName().c_str(), &value, pIntValue.getMin(), pIntValue.getMax())){
+            pIntValue.set(value);
         }
+        return;
+    }
+    ofParameter<float> pFloat;
+    if(p.type() == pFloat.type()){
+        ofParameter<float> &pFloatValue = p.cast<float>();
+        float value = pFloatValue.get();
+        if(ImGui::SliderFloat(pFloatValue.getName().c_str(), &value, pFloatValue.getMin(), pFloatValue.getMax())){
+            pFloatValue.set(value);
+        }
+        return;
     }
 }
 
+void ofApp::ImGuiRangeFromParams(ofAbstractParameter &pFrom, ofAbstractParameter &pTo){
+    ofParameter<int> pInt;
+    if(pFrom.type() == pInt.type()){
+        ofParameter<int> &pIntFromValue = pFrom.cast<int>();
+        ofParameter<int> &pIntToValue = pTo.cast<int>();
+        int valueFrom = pIntFromValue;
+        int valueTo = pIntToValue;
+        if(ImGui::DragIntRange2(pIntFromValue.getName().c_str(), &valueFrom, &valueTo, 1.0, pIntFromValue.getMin(), pIntFromValue.getMax(), "%i")){
+            pIntFromValue.set(valueFrom);
+            pIntToValue.set(valueTo);
+        }
+        return;
+    }
+    ofParameter<float> pFloat;
+    if(pFrom.type() == pFloat.type()){
+        ofParameter<float> &pFloatFromValue = pFrom.cast<float>();
+        ofParameter<float> &pFloatToValue = pTo.cast<float>();
+        float valueFrom = pFloatFromValue;
+        float valueTo = pFloatToValue;
+        if(ImGui::DragFloatRange2(pFloatFromValue.getName().c_str(), &valueFrom, &valueTo, 1.0, pFloatFromValue.getMin(), pFloatFromValue.getMax(), "%.3f")){
+            pFloatFromValue.set(valueFrom);
+            pFloatToValue.set(valueTo);
+        }
+        return;
+    }
+}

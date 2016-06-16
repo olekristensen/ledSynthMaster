@@ -143,6 +143,7 @@ public:
     void updateHardwareValue(ofAbstractParameter &param);
     
     bool updateHardware = true;
+    bool initDone = false;
     
     int index;
     static int nextIndex;
@@ -267,6 +268,7 @@ private:
     #define cmd_setMax 4
     #define cmd_saveToBoard 9
     #define cmd_disconnect 10
+    #define cmd_init_done 11
     
     struct RECEIVE_DATA_STRUCTURE{
         //put your variable definitions here for the data you want to receive

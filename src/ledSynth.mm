@@ -61,8 +61,12 @@ void ledSynth::update(){
                             p.setMax(cmd_data.value);
                             break;
                         case cmd_ping:
-                            ofLogVerbose() << "ping" << endl;
+                            ofLogVerbose(__FUNCTION__) << "received ping" << endl;
                             hardwareInit();
+                            break;
+                        case cmd_init_done:
+                            ofLogVerbose(__FUNCTION__) << "received init done" << endl;
+                            initDone = true;
                             break;
                             
                     }
@@ -213,5 +217,5 @@ void ledSynth::hardwareInit()
 {
     cmd_data.cmd = cmd_init;
     ET.sendData();
-    ofLogVerbose() << "sent init" << endl;
+    ofLogVerbose(__FUNCTION__) << "sent init" << endl;
 }

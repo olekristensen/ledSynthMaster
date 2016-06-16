@@ -42,27 +42,14 @@ public:
         col_main_area = ledSynth::temperatureToColor(6300);
         col_win_popup = ofColor::black;
         col_win_backg = ledSynth::temperatureToColor(6300).getLerped(ofColor::black, 0.075);
+        
         setup();
+        
     }
     
     void setup()
     {
-        ImGuiStyle* style = &ImGui::GetStyle();
-        
-        style->WindowPadding            = ImVec2(15, 15);
-        style->FramePadding             = ImVec2(5, 5);
-        style->ItemSpacing              = ImVec2(12, 12);
-        style->ItemInnerSpacing         = ImVec2(6, 6);
-        //style->Alpha                    = 1.0f;
-        //style->WindowFillAlphaDefault   = 1.0f;
-        style->WindowRounding           = 0.0f;
-        style->FrameRounding            = 4.0f;
-        //style->IndentSpacing            = 6.0f;
-        //style->ColumnsMinSpacing        = 50.0f;
-        style->GrabMinSize              = 5.0f;
-        style->GrabRounding             = 0.0f;
-        //style->ScrollbarSize            = 12.0f;
-        //style->ScrollbarRounding        = 0.0f;
+
     }
     
 };
@@ -123,6 +110,7 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     ofxImGui gui;
     
     void ImGuiSliderFromParam(ofAbstractParameter &p);
+    void ImGuiRangeFromParams(ofAbstractParameter &pFrom, ofAbstractParameter &pTo);
 
     bool showNodeGuis = false;
     
@@ -130,23 +118,57 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     int imageWidth;
     int imageHeight;
 
-    unsigned int kelvinCold;
-    unsigned int kelvinWarm;
+    unsigned int kelvinCold = 6500;
+    unsigned int kelvinWarm = 1800;
     
     ofVec2f offset;
 
-    float kelvinWarmRange;
-    float kelvinColdRange;
-    float temperatureSpeed = 0.8;
+    ofParameter<float> globalNoiseLevel {
+        "Level##Weater",
+        0.5, 0.0, 1.0
+    };
+    
+    ofParameter<int> hardwareUpdateIntervalFps {
+        "Update FPS",
+        12, 1, 60
+    };
+    
+    ofParameter<int> kelvinWarmRange {
+        "Range##WarmTemperature",
+        kelvinWarm, kelvinWarm, kelvinCold
+    };
+    ofParameter<int> kelvinColdRange {
+        "Range##ColdTemperature",
+        kelvinCold, kelvinWarm, kelvinCold
+    };
+    ofParameter<float> temperatureSpeed {
+        "Speed##Temperature",
+        0.8, 0.0, 1.0
+    };
     float temperatureTime = 0.0;
-    float temperatureSpread = 0.33333;
+    ofParameter<float> temperatureSpread {
+        "Spread##Temperature",
+        0.33333, 0.0, 1.0
+    };
     double temperatureSpreadCubic = 0.0;
     
-    float brightnessRangeFrom = 0.0;
-    float brightnessRangeTo = 1.0;
-    float brightnessSpeed = 0.5;
+    ofParameter<float> brightnessRangeFrom {
+        "Range##FromBrightness",
+        0.0, 0.0, 1.0
+    };
+    ofParameter<float> brightnessRangeTo {
+        "Range##ToBrightness",
+        1.0, 0.0, 1.0
+    };
+    ofParameter<float> brightnessSpeed {
+        "Speed##Brightness",
+        0.5, 0.0, 1.0
+    };
     float brightnessTime = 0.0;
-    float brightnessSpread = 0.35;
+    ofParameter<float> brightnessSpread {
+        "Spread##Brightness",
+        0.35, 0.0, 1.0
+    };
     double brightnessSpreadCubic = 0.0;
     
     float timeOffset = 1000.0;
@@ -164,19 +186,38 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     ofxCv::KalmanPosition kalman;
     ofVec2f averageMovement;
     ofVec2f averageMovementFiltered;
-    float offsetScale;
-
+    
     ofVideoGrabber camera;
     ofImage cameraImage;
     GLuint cameraTextureSourceID;
-    bool mirrorCamera;
+
+    ofParameter<bool> mirrorCamera {"Mirror##Movement",
+        true
+    };
+    ofParameter<float> offsetScale {
+        "Scale##Movement",
+        0.5, 0.0, 1.0
+    };
     
-    float globalNoiseLevel;
+    ofParameterGroup rootParameters {"rootParameters",
+        globalNoiseLevel,
+        hardwareUpdateIntervalFps,
+        kelvinWarmRange,
+        kelvinColdRange,
+        temperatureSpeed,
+        temperatureSpread,
+        brightnessRangeFrom,
+        brightnessRangeTo,
+        brightnessSpeed,
+        brightnessSpread,
+        mirrorCamera,
+        offsetScale
+    };
     
     ofxCv::FlowFarneback fb;
     
     ofVec2f mouseDragOffset;
     
-    int hardwareUpdateIntervalMillis = 1000/12;
+    string getConfigurationString();
     
 };
