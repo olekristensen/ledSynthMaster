@@ -15,6 +15,7 @@ class ofxRFduinoApp
 {
 public:
     virtual void didDiscoverRFduino(CBPeripheral * rfduino, NSDictionary * advertisementData) = 0;
+    virtual void didDiscoverRFduino(CBPeripheral * rfduino) = 0;
     virtual void didUpdateDiscoveredRFduino(CBPeripheral * rfduino) = 0;
     virtual void didConnectRFduino(CBPeripheral * rfduino) = 0;
     virtual void didLoadServiceRFduino(CBPeripheral * rfduino) = 0;

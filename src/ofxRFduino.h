@@ -19,7 +19,7 @@ public:
     
     virtual void receivedData( NSData *data ) = 0;
     void setPeripheral(CBPeripheral * p){
-        std::cout << "SET PERIPHERAL" << std::endl;
+        std::cout << __FUNCTION__ << " " << p << std::endl;
         peripheral = p;
         [(BLEPeripheralDelegate*)[peripheral delegate] setRFDuino:this];
     };

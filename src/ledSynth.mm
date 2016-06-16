@@ -19,10 +19,16 @@ ledSynth::~ledSynth(){
     index = nextIndex--;
 }
 
+void ledSynth::removeListeners(){
+    ofRemoveListener(hardware.parameterChangedE(),
+                     this, &ledSynth::updateHardwareValue);
+}
+
 void ledSynth::setup(){
     position.set(ofVec2f(ofRandom(-1.0,1.0), ofRandom(-1.0,1.0)));
     //gui.setup(parameters, "settings.xml");
-    ofAddListener(parameters.parameterChangedE(), this, &ledSynth::updateHardwareValue);
+    ofAddListener(hardware.parameterChangedE(),
+                  this, &ledSynth::updateHardwareValue);
 }
 
 //--------------------------------------------------------------
@@ -43,9 +49,10 @@ void ledSynth::update(){
                     switch (cmd_data.cmd)
                     {
                         case cmd_setValue:
-                            updateHardware = false;
+
+                            p.disableEvents();
                             p = cmd_data.value;
-                            updateHardware = true;
+                            p.enableEvents();
                             break;
                         case cmd_setMin:
                             p.setMin(cmd_data.value);
@@ -61,6 +68,31 @@ void ledSynth::update(){
                     }
                     cmd_data.cmd = cmd_executed;
                 }
+                if(canSend){
+                    // wait a bit between update bathces
+                    if(nextHardwareUpdateMillis < ofGetElapsedTimeMillis()){
+                        // go through the queue of params to update
+                        for (auto paramToUpdate : paramsToUpdate){
+                            int i = 0;
+                            // find it in the hardware group
+                            for(auto paramInHardware : hardware){
+                                if(paramInHardware->getName() == paramToUpdate->getName()){
+                                    // send update
+                                    ofLogVerbose() << "updating " << paramToUpdate->getName() << endl;
+                                    cmd_data.cmd = cmd_setValue;
+                                    cmd_data.value = paramToUpdate->cast<int>();
+                                    cmd_data.item = i;
+                                    ET.sendData();
+                                    break;
+                                }
+                            i++;
+                        }
+                    }
+                    paramsToUpdate.clear();
+                        nextHardwareUpdateMillis = ofGetElapsedTimeMillis() + hardwareUpdateIntervalMillis;
+                    }
+                }
+                
                 break;
             case CBPeripheralStateConnecting:
                 connected = false;
@@ -86,7 +118,6 @@ void ledSynth::draw(){
     ofPushMatrix();
     ofFill();
     ofSetColor(64,55);
-//    ofDrawCircle(0, 0, outerRadius);
     
     ofPath graph;
     ofPath graphBackground;
@@ -101,7 +132,7 @@ void ledSynth::draw(){
     for(auto p : graphParameters){
         
         ofVec2f pVec(0,
-                     ofMap(p->cast<int>().get(), p->cast<int>().getMin(), p->cast<int>().getMax(), innerRadius, outerRadius)
+                     ofMap(p->cast<int>().get(), p->cast<int>().getMin(), p->cast<int>().getMax(), innerRadius, outerRadius, true)
                      );
         
         pVec.rotate(360.0*i/graphParameters.size());
@@ -126,6 +157,8 @@ void ledSynth::draw(){
     graphBackground.draw();
 
     if(connected) {
+        ofSetColor(ofColor::red, movementSensor*127);
+        ofDrawCircle(0, 0, innerRadius+2);
         ofSetColor(temperatureToColor(temperatureOutput)*ofMap(intensityOutput,intensityOutput.getMin(),intensityOutput.getMax(), 0.0, 1.0),255);
         ofDrawCircle(0, 0, innerRadius);
     }else{
@@ -163,20 +196,17 @@ void ledSynth::receivedData(NSData *data )
 }
 
 void ledSynth::updateHardwareValue(ofAbstractParameter &param){
-    if(updateHardware && canSend){
-        int i = 0;
-        for(auto p : hardware){
-            if(p.get()->getName() == param.getName()){
-                ofLogNotice() << "updating " << param.getName() << endl;
-                cmd_data.cmd = cmd_setValue;
-                cmd_data.value = param.cast<int>();
-                cmd_data.item = i;
-                ET.sendData();
-                break;
+        // check if this is a hardware parameter
+        if(hardware.contains(param.getName())){
+            // check if this parameter is allready queued
+            for(auto paramToUpdate : paramsToUpdate){
+                if(paramToUpdate->getName() == param.getName()){
+                    return; // param is allready queued
+                }
             }
-            i++;
+            // push this parameter onto the update queue
+            paramsToUpdate.push_back(&param);
         }
-    }
 }
 
 void ledSynth::hardwareInit()

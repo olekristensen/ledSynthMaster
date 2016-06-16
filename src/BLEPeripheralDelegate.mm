@@ -44,7 +44,11 @@
         
         if ([aService.UUID isEqual:[CBUUID UUIDWithString:@"2220"]])
         {
-            [aPeripheral discoverCharacteristics:nil forService:aService];
+        
+            //if(aService.characteristics)
+            //    [self peripheral:aPeripheral didDiscoverCharacteristicsForService:aService error:nil];
+            //else
+                [aPeripheral discoverCharacteristics:nil forService:aService];
         }
         
     }

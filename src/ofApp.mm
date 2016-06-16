@@ -48,7 +48,7 @@ void ofApp::setup(){
     gui.setup(new GuiTheme());
         
     // FAKE NODES
-    /*
+    /**
     for (int i = 1; i < 10; i++){
     ledSynth *l = new ledSynth();
         l->setPeripheral(NULL);
@@ -57,7 +57,8 @@ void ofApp::setup(){
         l->remoteID = i;
         ledSynths.push_back(l);
     }
-    */
+    //*/
+    
     // Digital Weather
     
     imageWidth = imageHeight = 640;
@@ -73,9 +74,41 @@ void ofApp::setup(){
     offset.set(0,0);
     
     draggedLedSynth = nullptr;
+    guiLedSynth = nullptr;
+    tooltipLedSynth = nullptr;
 
-    camera.setup(320, 240);
-    camera.setUseTexture(true);
+    int deviceId = 0;
+    
+    for(auto dev : camera.listDevices()){
+        ofLogNotice(__FUNCTION__) << dev.deviceName << ": " << dev.id << endl;
+        for (auto f : dev.formats){
+            ofLogVerbose(__FUNCTION__) << f.width << " x " << f.height << endl;
+            for (auto framerate : f.framerates){
+                ofLogVerbose(__FUNCTION__) << "\t - " << framerate;
+            }
+        }
+        if(dev.deviceName.find("FaceTime") == string::npos){
+            deviceId = dev.id;
+        }
+    }
+    camera.setDeviceID(deviceId);
+    camera.setup(320, 320*9/16);
+    cameraImage.allocate(camera.getWidth(), camera.getHeight(), OF_IMAGE_COLOR);
+    mirrorCamera = false;
+    
+    kalman.init(1/5000., 1/10.); // inverse of (smoothness, rapidness)
+    
+    fbPyrScale = .25;
+    fbLevels = 2;
+    fbIterations = 2;
+    fbPolyN = 7;
+    fbPolySigma = 1.5;
+    fbWinSize = 32;
+    fbUseGaussian = false;
+    offsetScale = 0.1;
+    
+    globalNoiseLevel = 0.5;
+
 }
 
 void ofApp::exit(){
@@ -89,8 +122,6 @@ void ofApp::update(){
     camera.update();
     
     if(camera.isFrameNew()) {
-        /*
-        curFlow = &fb;
         fb.setPyramidScale(fbPyrScale);
         fb.setNumLevels(fbLevels);
         fb.setWindowSize(fbWinSize);
@@ -99,10 +130,15 @@ void ofApp::update(){
         fb.setPolySigma(fbPolySigma);
         fb.setUseGaussian(fbUseGaussian);
         
-        // you can use Flow polymorphically
-        curFlow->calcOpticalFlow(camera);
-         */
+        cameraImage.setFromPixels(camera.getPixels());
+        if(mirrorCamera)
+            cameraImage.mirror(false, true);
+        fb.calcOpticalFlow(cameraImage);
+        averageMovement = fb.getAverageFlow();
     }
+
+    kalman.update(averageMovement);
+    averageMovementFiltered = kalman.getEstimation();
 
     
     if(ofGetFrameNum() == 3){
@@ -114,8 +150,7 @@ void ofApp::update(){
     }
     int index = 0;
 
-    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
-        ledSynth * l = *it;
+    for (auto l : ledSynths){
         
         // update values
         
@@ -133,8 +168,7 @@ void ofApp::update(){
                     
                     ledSynth * remote = NULL;
                     
-                    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
-                        ledSynth * r = *it;
+                    for (auto r :ledSynths){
                         if (r->ownID == l->remoteID) {
                             remote = r;
                             break;
@@ -142,22 +176,25 @@ void ofApp::update(){
                     }
                     
                     if(remote != NULL){
-                        
-                        l->intensityRemote = remote->intensityOutput;
-                        l->temperatureRemote = remote->temperatureOutput;
+                        l->intensityRemote = ofLerp(remote->intensityOutput, l->intensityNoise, globalNoiseLevel);
+                        l->temperatureRemote = cvRound(ofLerp(remote->temperatureOutput, l->temperatureNoise, globalNoiseLevel));
+                    } else {
+                        l->intensityRemote = ofLerp(l->intensityFader, l->intensityNoise, globalNoiseLevel);
+                        l->temperatureRemote = cvRound(ofLerp(l->temperatureFader, l->temperatureNoise, globalNoiseLevel));
                     }
                 }
             }
         
         }
         }
-
         l->update();
         // rearrange
         
         
         index++;
     }
+    
+    offset+=averageMovementFiltered*ofGetLastFrameTime()*offsetScale;
     
     
 }
@@ -170,8 +207,9 @@ void ofApp::draw(){
     gui.begin();
 
     // Guis
-    ImGui::End();
-
+    //ImGui::End();
+    //ImGui::ShowTestWindow();
+    
     ImGuiWindowFlags window_flags = 0;
     window_flags |= ImGuiWindowFlags_NoTitleBar;
     window_flags |= ImGuiWindowFlags_NoResize;
@@ -181,7 +219,6 @@ void ofApp::draw(){
     ImGui::SetNextWindowPos(ofVec2f(0,0));
     ImGui::SetNextWindowSize(ofVec2f(guiColumnWidth,ofGetHeight()));
     ImGui::Begin("Main###Debug", NULL, window_flags);
-    //ImGui::ShowTestWindow();
     
     // Digital Weather
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[2]);
@@ -189,9 +226,17 @@ void ofApp::draw(){
     ImGui::PopFont();
 
     ImGui::Text("FPS %.3f", ofGetFrameRate());
-    ImGui::SliderFloat("Offset X", &offset.x, -1, 1);
-    ImGui::SliderFloat("Offset Y", &offset.y, -1, 1);
 
+    ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+    ImGui::TextUnformatted("Weather Level");
+    ImGui::PopFont();
+    
+    ImGui::SliderFloat("Level##Weater", &globalNoiseLevel, 0.0, 1.0);
+    ImGui::SliderInt("Update interval millis", &hardwareUpdateIntervalMillis, 0, 1000);
+    for (auto l : ledSynths){
+        l->hardwareUpdateIntervalMillis = hardwareUpdateIntervalMillis;
+    }
+    
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
     ImGui::TextUnformatted("Temperature");
     ImGui::PopFont();
@@ -208,18 +253,6 @@ void ofApp::draw(){
     ImGui::SliderFloat("Speed##Brightness", &brightnessSpeed, 0.0, 1.0);
     ImGui::SliderFloat("Spread##Brightness", &brightnessSpread, 0.0, 1.0);
     
-    
-    //FIXME: Camera texture does not draw
-    
-    cameraTextureSourceID = camera.getTexture().getTextureData().textureID;
-    ImGui::Image((void*)&cameraTextureSourceID, ofVec2f(camera.getWidth(), camera.getHeight()));
-    
-    ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
-    ImGui::TextUnformatted("Options");
-    ImGui::PopFont();
-    
-    ImGui::Checkbox("Show Node Guis", &showNodeGuis);
-    
     temperatureSpreadCubic = powf(temperatureSpread, 3);
     brightnessSpreadCubic = powf(brightnessSpread, 3);
     
@@ -228,17 +261,15 @@ void ofApp::draw(){
     
     ofPixels &pix = digitalWeatherImage.getPixels();
     
-    dispatch_apply( imageHeight, dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^(size_t y){
+    dispatch_apply( imageHeight, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^(size_t y){
         
-        double yMapped = ofMap(y+(imageHeight*offset.y), imageHeight, 0, -10.0, 10.0);
+        double yMapped = ofMap(y-(imageHeight*offset.y), 0, imageHeight, -10.0, 10.0);
         
-        //double yMapped = fmodf(y+(imageHeight*offset.y), imageHeight);
-
         auto line = pix.getLine(y);
         
         for (int x = 0; x < imageWidth ; x++) {
             
-            double xMapped = ofMap(x+(imageWidth*offset.x), imageWidth, 0, -10.0, 10.0);
+            double xMapped = ofMap(x-(imageWidth*offset.x), 0, imageWidth, -10.0, 10.0);
 
             /*
              // 4D shape that wraps to make tiling
@@ -279,7 +310,6 @@ void ofApp::draw(){
     temperatureTime += powf(temperatureSpeed,8) * ofGetLastFrameTime();
     brightnessTime += powf(brightnessSpeed,8) * ofGetLastFrameTime();
 
-//    digitalWeatherImage.setFromPixels(pix);
     digitalWeatherImage.update();
 
     ofSetColor(255,255);
@@ -288,8 +318,8 @@ void ofApp::draw(){
 
     digitalWeatherImage.draw(weatherRect);
 
-    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
-        ledSynth * l = *it;
+    for (auto l :ledSynths){
+
         ofPushMatrix();
         
         ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
@@ -308,14 +338,13 @@ void ofApp::draw(){
     // Connections
     
     ofSetColor(63,255);
-    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
-        ledSynth * l = *it;
+    for (auto l :ledSynths){
+
         if(l->remoteID != l->ownID){
             
             ledSynth * remote = NULL;
             
-            for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
-                ledSynth * r = *it;
+            for (auto r :ledSynths){
                 if (r->ownID == l->remoteID) {
                     remote = r;
                     break;
@@ -328,18 +357,101 @@ void ofApp::draw(){
         }
     }
     
-    if(showNodeGuis) {
-        for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
-            ledSynth * l = *it;
-            l->drawGui();
+    // Node Tooltips
+    
+    if(tooltipLedSynth != nullptr){
+        
+        ImGui::BeginTooltip();
+        float percent;
+
+        ImGui::Text("ID: %i\nVersion: %i.%i", tooltipLedSynth->ownID.get(), tooltipLedSynth->versionMajor.get(), tooltipLedSynth->versionMinor.get());
+        if(tooltipLedSynth->ownID.get() == tooltipLedSynth->remoteID.get()){
+            ImGui::TextUnformatted("Movement sensor selected");
+        } else if (tooltipLedSynth->remoteID.get() == 0){
+            ImGui::TextUnformatted("Light sensor selected");
+        } else {
+            ImGui::Text("Remote %i selected", tooltipLedSynth->remoteID.get());
         }
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+        ImGui::TextUnformatted("Faders");
+        ImGui::PopFont();
+        percent = tooltipLedSynth->intensityFader.get() * 0.1;
+        ImGui::Text("Intensity: %.1f %%\nTemperature: %i k", percent, tooltipLedSynth->temperatureFader.get());
+        
+            ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+            ImGui::TextUnformatted("Remote");
+            ImGui::PopFont();
+            percent = tooltipLedSynth->intensityRemote.get() * 0.1;
+            ImGui::Text("Channel: %i\nIntensity: %.1f %%\nTemperature: %i k\nMix: %.1f %%", tooltipLedSynth->remoteID.get(), percent, tooltipLedSynth->temperatureRemote.get(), ofMap(tooltipLedSynth->mixRemote.get(), tooltipLedSynth->mixRemote.getMin(), tooltipLedSynth->mixRemote.getMax(), 0.0, 100.0));
+
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+        ImGui::TextUnformatted("Weather");
+        ImGui::PopFont();
+        percent = tooltipLedSynth->intensityNoise.get() * 0.1;
+        ImGui::Text("Intensity: %.1f %%\nTemperature: %i k\nMix: %.1f %%", percent, tooltipLedSynth->temperatureNoise.get(), ofMap(tooltipLedSynth->mixNoise.get(), tooltipLedSynth->mixNoise.getMin(), tooltipLedSynth->mixNoise.getMax(), 0.0, 100.0));
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+        ImGui::TextUnformatted("Output");
+        ImGui::PopFont();
+        percent = tooltipLedSynth->intensityOutput.get() * 0.1;
+        ImGui::Text("Intensity: %.1f %%\nTemperature: %i k", percent, tooltipLedSynth->temperatureOutput.get());
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+        ImGui::TextUnformatted("Movement Sensor");
+        ImGui::PopFont();
+        ImGui::Text("Sensor: %s\nLevel: %.1f %%", tooltipLedSynth->movementSensor.get()>0?"activity":"still", ofMap(tooltipLedSynth->movementSensorLevel.get(), 0, 1000, 0.0, 100.0));
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+        ImGui::TextUnformatted("Light Sensor");
+        ImGui::PopFont();
+        ImGui::Text("Intensity: %i lux\nTemperature: %i k\nLevel: %i", tooltipLedSynth->lightSensorLux.get(), tooltipLedSynth->lightSensorTemperature.get(), tooltipLedSynth->lightSensorLightLevel.get());
+        
+        ImGui::EndTooltip();
     }
+    
+
+    ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+    ImGui::TextUnformatted("Movement");
+    ImGui::PopFont();
+    ImGui::Checkbox("Mirrored", &mirrorCamera);
+    ImGui::SliderFloat("Scale", &offsetScale, 0.0, 1.0);
+    ImGui::InputFloat2("Offset", offset.getPtr());
+    
+    /*
+    ImGui::End();
+    
+    ImGui::SetNextWindowPos(ofVec2f(400,0), ImGuiSetCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ofVec2f(guiColumnWidth,ofGetHeight()), ImGuiSetCond_FirstUseEver);
+    ImGui::Begin("OpenCv");
+
+    ImGui::SliderFloat("Pyramid Scale", &fbPyrScale, 0, .99);
+    ImGui::SliderInt("Levels", &fbLevels, 1, 8);
+    ImGui::SliderInt("Iterations", &fbIterations, 1, 8);
+    ImGui::SliderInt("Poly N", &fbPolyN, 5, 10);
+    ImGui::SliderFloat("Poly Sigma", &fbPolySigma, 1.1, 2.0);
+    ImGui::Checkbox("Use Gaussian", &fbUseGaussian);
+    ImGui::SliderInt("Window Size", &fbWinSize, 4, 64);
+*/
     gui.end();
+    
+    // Camera
+    
+    ofSetColor(255,255);
+    float camHeight = guiColumnWidth * camera.getHeight() / camera.getWidth();
+    cameraImage.draw(15, ofGetHeight()-(camHeight-15), guiColumnWidth-30, camHeight-30);
+    //fb.draw(15,ofGetHeight()-(camHeight-15), guiColumnWidth-30, camHeight-30);
+    ofVec2f center = ofVec2f(guiColumnWidth/2.0, ofGetHeight()-(camHeight/2.0));
+    ofDrawEllipse(center.x, center.y, 10, 10);
+    ofPushMatrix();
+    ofScale(1.0, 1.0, 0.0);
+        if((averageMovementFiltered*guiColumnWidth*0.2).length() > 5)
+        ofDrawArrow(center, center+(averageMovementFiltered*guiColumnWidth*0.2), 5);
+    ofPopMatrix();
     
     // Status bar
     
     string status = ([ble isLECapableHardware]?"Bluetooth LE supported":"No Bluetooth LE support");
-    status += "\n" + ofToString(ledSynth::nextIndex) + " devices connected";
+    status += "\n" + ofToString(ledSynths.size()) + " devices connected";
     
     float statusbarMargin = 20;
 //    statusbarHeight = fontStatus.stringHeight(status) + (statusbarMargin * 2.0);
@@ -364,15 +476,15 @@ void ofApp::layout(){
 
 ofVec2f ofApp::getMappedCoordsFromImage(ofVec2f v){
     ofVec2f iVec;
-    iVec.x = ofMap(v.x+(imageWidth*offset.x), imageWidth, 0, -10.0, 10.0);
-    iVec.y = ofMap(v.y+(imageHeight*offset.y), imageHeight, 0, -10.0, 10.0);
+    iVec.x = ofMap(v.x-(imageWidth*offset.x), 0, imageWidth, -10.0, 10.0);
+    iVec.y = ofMap(v.y-(imageHeight*offset.y), 0, imageHeight, -10.0, 10.0);
     return iVec;
 }
 
 ofVec2f ofApp::getMappedCoordsFromNormalised(ofVec2f v){
     ofVec2f iVec;
-    iVec.x = ofMap(v.x+(offset.x), 1.0, -1.0, -10.0, 10.0);
-    iVec.y = ofMap(v.y+(offset.y), 1.0, -1.0, -10.0, 10.0);
+    iVec.x = ofMap(v.x-(offset.x*2.0), -1.0, 1.0, -10.0, 10.0);
+    iVec.y = ofMap(v.y-(offset.y*2.0), -1.0, 1.0, -10.0, 10.0);
     return iVec;
 }
 
@@ -422,7 +534,17 @@ void ofApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y){
-
+    for (auto l :ledSynths){
+        
+        ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
+        
+        if(position.distance(ofVec2f(x,y)) < 10.0){
+            tooltipLedSynth = l;
+            return;
+        }
+        
+    }
+    tooltipLedSynth = nullptr;
 }
 
 //--------------------------------------------------------------
@@ -430,6 +552,7 @@ void ofApp::mouseDragged(int x, int y, int button){
     if(draggedLedSynth != nullptr){
         
         ofVec2f mouseVec(x, y);
+        mouseVec += mouseDragOffset;
         
         ofVec2f position = (mouseVec - weatherRect.getCenter()) / (weatherRect.getWidth()*0.5);
 
@@ -442,13 +565,13 @@ void ofApp::mouseDragged(int x, int y, int button){
 void ofApp::mousePressed(int x, int y, int button){
 
     if(draggedLedSynth == nullptr){
-            for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
-            ledSynth * l = *it;
+        for (auto l :ledSynths){
         
             ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
 
             if(position.distance(ofVec2f(x,y)) < 10.0){
                 draggedLedSynth = l;
+                mouseDragOffset = position - ofVec2f(x,y);
             }
         
         }
@@ -461,6 +584,19 @@ void ofApp::mouseReleased(int x, int y, int button){
     if(draggedLedSynth != nullptr){
         draggedLedSynth = nullptr;
     }
+    
+    for (auto l :ledSynths){
+        
+        ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
+        
+        if(position.distance(ofVec2f(x,y)) < 10.0){
+            guiLedSynth = l;
+            return;
+        }
+        
+    }
+    guiLedSynth = nullptr;
+
     
 }
 
@@ -502,8 +638,7 @@ void ofApp::didDiscoverRFduino(CBPeripheral *peripheral, NSDictionary *advertise
     {
         
         bool isNew = true;
-        for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
-            ledSynth * l = *it;
+        for (auto l :ledSynths){
             if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
                 isNew = false;
                 ofLogNotice() << [peripheral identifier] << " allready connected" << endl;
@@ -512,7 +647,34 @@ void ofApp::didDiscoverRFduino(CBPeripheral *peripheral, NSDictionary *advertise
         }
         if(isNew){
             ofLogNotice() << [peripheral identifier] << " is new" << endl;
-            
+            //[peripheral retain];
+            ledSynth *l = new ledSynth();
+            l->setPeripheral(peripheral);
+            l->canSend = false;
+            ledSynths.push_back(l);
+            [ble connectDevice:peripheral];
+        }
+    }
+}
+
+void ofApp::didDiscoverRFduino(CBPeripheral *peripheral)
+{
+    ofLogNotice() << " didDiscoverRFduino " << [[peripheral name] UTF8String];
+    
+    if( [[peripheral name] isEqualTo:@"LEDSYNTH"] || [[peripheral name] isEqualTo:@"light node"])
+    {
+        
+        bool isNew = true;
+        for (auto l :ledSynths){
+            if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
+                isNew = false;
+                ofLogNotice() << [peripheral identifier] << " allready connected" << endl;
+                //[ble disconnectDevice:peripheral];
+            }
+        }
+        if(isNew){
+            ofLogNotice() << [peripheral identifier] << " is new" << endl;
+            //[peripheral retain];
             ledSynth *l = new ledSynth();
             l->setPeripheral(peripheral);
             l->canSend = false;
@@ -531,8 +693,7 @@ void ofApp::didConnectRFduino(CBPeripheral *peripheral)
 {
     ofLogNotice(__FUNCTION__) << [peripheral identifier] << endl;
     
-    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
-        ledSynth * l = *it;
+    for (auto l :ledSynths){
         if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
             ofLogNotice() << "ready to receive" << endl;
             [(BLEPeripheralDelegate*)[l->peripheral delegate] setRFDuino:l];
@@ -547,8 +708,7 @@ void ofApp::disconnectRFduino(CBPeripheral *peripheral)
 {
     ofLogNotice(__FUNCTION__) << [peripheral identifier] << endl;
     
-    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
-        ledSynth * l = *it;
+    for (auto l :ledSynths){
         if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
             [ble disconnectDevice:peripheral];
             break;
@@ -563,8 +723,7 @@ void ofApp::didLoadServiceRFduino(CBPeripheral *peripheral)
 {
     ofLogNotice(__FUNCTION__) << [peripheral identifier] << endl;
     
-    for (std::vector<ledSynth*>::iterator it = ledSynths.begin() ; it != ledSynths.end(); ++it){
-        ledSynth * l = *it;
+    for (auto l :ledSynths){
         if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
             ofLogNotice() << "ready to send" << endl;
             l->canSend = true;
@@ -578,24 +737,36 @@ void ofApp::didDisconnectRFduino(CBPeripheral *peripheral)
 {
     ofLogNotice(__FUNCTION__) << [peripheral identifier] << endl;
     
+    ledSynth * l;
     bool found = false;
     std::vector<ledSynth*>::iterator it = ledSynths.begin();
     for ( ; it != ledSynths.end(); ++it){
         if ([[(*it)->peripheral identifier] isEqualTo:[peripheral identifier]]) {
-            (*it)->canSend = false;
+            l = (*it);
+            l->canSend = false;
             found = true;
             break;
         }
     }
     if (found) {
-            ledSynth * l = *it;
-            if ([[l->peripheral identifier] isEqualTo:[peripheral identifier]]) {
-           //     l->parameters.clear();
-            }
-
+        //[peripheral release];
+        //l->removeListeners();
+        
         ledSynths.erase(it);
         delete l;
+        [ble stopScan];
+        [ble startScan];
     }
+}
 
+void ofApp::ImGuiSliderFromParam(ofAbstractParameter &p){
+    ofParameter<int> pInt;
+    if(p.type() == pInt.type()){
+        pInt = p.cast<ofParameter<int>>();
+        int value = pInt;
+        if(ImGui::SliderInt(pInt.getName().c_str(), &value, pInt.getMin(), pInt.getMax())){
+            pInt.set(value);
+        }
+    }
 }
 

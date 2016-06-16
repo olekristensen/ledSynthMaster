@@ -8,9 +8,7 @@ class ofxRFduino;
 {
     
     CBPeripheral *peripheral;
-    
     ofxRFduino* rfDuino;
-    
     ofxRFduinoApp *app;
 
 }

@@ -194,6 +194,7 @@
 - (void) disconnectDevice:(CBPeripheral *) aPeripheral
 {
     CBPeripheral * peripheral = aPeripheral;
+    //[peripheral release]; // MUST NOT
     [manager cancelPeripheralConnection:peripheral];
 }
 
@@ -220,27 +221,27 @@
     
     app->didDiscoverRFduino(aPeripheral, advertisementData);
     
-//    [manager retrievePeripherals:[NSArray arrayWithObject:(id)aPeripheral.UUID]];
+    //[manager retrievePeripherals:[NSArray arrayWithObject:(id)aPeripheral.UUID]];
 }
 
 /*
  Invoked when the central manager retrieves the list of known peripherals.
  */
-//- (void)centralManager:(CBCentralManager *)central didRetrievePeripherals:(NSArray *)peripherals
-//{
-//    //NSLog(@"Retrieved peripheral: %lu - %@", [peripherals count], peripherals);
-//    
-//    [self stopScan];
-//    
-//    /* If there are any known devices, automatically connect to it.*/
-//    if([peripherals count] >=1)
-//    {
-//        for( CBPeripheral * p in peripherals )
-//        {
-//            app->didDiscoverRFduino(p);
-//        }
-//    }
-//}
+- (void)centralManager:(CBCentralManager *)central didRetrievePeripherals:(NSArray *)peripherals
+{
+    NSLog(@"Retrieved peripheral: %lu - %@", [peripherals count], peripherals);
+    
+    //[self stopScan];
+    
+    /* If there are any known devices, automatically connect to it.*/
+    if([peripherals count] >=1)
+    {
+        for( CBPeripheral * p in peripherals )
+        {
+            app->didDiscoverRFduino(p);
+        }
+    }
+}
 
 /*
  Invoked whenever a connection is succesfully created with the peripheral. 
@@ -252,7 +253,10 @@
     [pd retain];
     [pd setApplication:app];
     [aPeripheral setDelegate:pd];
-    [aPeripheral discoverServices:nil];
+    //if(aPeripheral.services)
+    //    [pd peripheral:aPeripheral didDiscoverServices:nil];
+    //else
+        [aPeripheral discoverServices:nil];
     app->didConnectRFduino(aPeripheral);
 
 }
@@ -264,10 +268,10 @@
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)aPeripheral error:(NSError *)error
 {
     if([bleDevices containsObject:aPeripheral]){
-        app->didDisconnectRFduino(aPeripheral);
         [manager cancelPeripheralConnection:aPeripheral];
         [bleDevices removeObject:aPeripheral];
         BLEPeripheralDelegate * pd = [aPeripheral delegate];
+        app->didDisconnectRFduino(aPeripheral);
         [aPeripheral release];
         [pd release];
     }

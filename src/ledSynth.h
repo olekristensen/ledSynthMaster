@@ -221,6 +221,8 @@ public:
         temperatureFader,
         temperatureOutput
     };
+    
+    vector<ofAbstractParameter *> paramsToUpdate;
 
     ofParameter<bool> connected       {"connected", false};
     ofParameter<bool> disconnect      {"disconnect", false};
@@ -239,6 +241,8 @@ public:
     
     void drawGui();
     
+    void removeListeners();
+    
     float *buffer;
     ofImage *img;
     std::queue <char> inputQueue;
@@ -247,6 +251,7 @@ public:
     
     bool guiShown = false;
     
+    int hardwareUpdateIntervalMillis = 1000/2;
 
 private:
     
@@ -278,6 +283,7 @@ private:
     
     float connectionEstablishedSeconds = -1.0;
     float cmdPingTimeoutSeconds = 10.0;
+    long nextHardwareUpdateMillis = 0;
 };
 
 

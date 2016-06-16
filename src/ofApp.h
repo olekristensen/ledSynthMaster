@@ -88,6 +88,7 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     void exit();
     
     void didDiscoverRFduino(CBPeripheral *rfduino, NSDictionary *advertisementData);
+    void didDiscoverRFduino(CBPeripheral *rfduino);
     void didUpdateDiscoveredRFduino(CBPeripheral *rfduino);
     void didConnectRFduino(CBPeripheral *rfduino);
     void didLoadServiceRFduino(CBPeripheral *rfduino);
@@ -116,8 +117,13 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     vector<ledSynth*> ledSynths;
     
     ledSynth * draggedLedSynth;
+    ledSynth * guiLedSynth;
+    ledSynth * tooltipLedSynth;
     
     ofxImGui gui;
+    
+    void ImGuiSliderFromParam(ofAbstractParameter &p);
+
     bool showNodeGuis = false;
     
     ofImage digitalWeatherImage;
@@ -131,16 +137,16 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
 
     float kelvinWarmRange;
     float kelvinColdRange;
-    float temperatureSpeed = 0.3;
+    float temperatureSpeed = 0.8;
     float temperatureTime = 0.0;
-    float temperatureSpread = 0.5;
+    float temperatureSpread = 0.33333;
     double temperatureSpreadCubic = 0.0;
     
     float brightnessRangeFrom = 0.0;
     float brightnessRangeTo = 1.0;
-    float brightnessSpeed = 0.3;
+    float brightnessSpeed = 0.5;
     float brightnessTime = 0.0;
-    float brightnessSpread = 0.5;
+    float brightnessSpread = 0.35;
     double brightnessSpreadCubic = 0.0;
     
     float timeOffset = 1000.0;
@@ -151,14 +157,26 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     float statusbarHeight = 68;
     bool windowDidResize = false;
     
-    float fbPyrScale, lkQualityLevel, fbPolySigma;
-    int fbLevels, lkWinSize, fbIterations, fbPolyN, fbWinSize, lkMaxLevel, lkMaxFeatures, lkMinDistance;
-    bool fbUseGaussian, usefb;
+    float fbPyrScale, fbPolySigma;
+    int fbLevels, fbIterations, fbPolyN, fbWinSize;
+    bool fbUseGaussian;
+    
+    ofxCv::KalmanPosition kalman;
+    ofVec2f averageMovement;
+    ofVec2f averageMovementFiltered;
+    float offsetScale;
 
     ofVideoGrabber camera;
+    ofImage cameraImage;
     GLuint cameraTextureSourceID;
+    bool mirrorCamera;
+    
+    float globalNoiseLevel;
     
     ofxCv::FlowFarneback fb;
-    ofxCv::FlowPyrLK lk;
-    ofxCv::Flow* curFlow;
+    
+    ofVec2f mouseDragOffset;
+    
+    int hardwareUpdateIntervalMillis = 1000/12;
+    
 };
