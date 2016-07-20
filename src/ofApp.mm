@@ -607,6 +607,11 @@ void ofApp::draw(){
             guiLedSynth->useRanges.set(useRanges?1:0);
         }
         
+        bool remoteOverride = guiLedSynth->remoteOverride.get() == 1;
+        if(ImGui::Checkbox("Override", &remoteOverride)){
+            guiLedSynth->remoteOverride.set(remoteOverride?1:0);
+        }
+        
         ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
         ImGui::TextUnformatted("Faders");
         ImGui::PopFont();
@@ -846,6 +851,8 @@ void ofApp::mousePressed(int x, int y, int button){
         }
     }
     
+    bool ledSynthClicked = false;
+    
     for (auto l :ledSynths){
         
         if(l->initDone){
@@ -853,12 +860,17 @@ void ofApp::mousePressed(int x, int y, int button){
             
             if(position.distance(ofVec2f(x,y)) < 30.0){
                 guiLedSynth = l;
-                return;
+                l->identify = 1;
+                ledSynthClicked = true;
             }
+            
         }
         
     }
-    if(weatherRect.inside(x, y)) guiLedSynth = nullptr;
+    if(weatherRect.inside(x, y) && !ledSynthClicked) {
+        if(guiLedSynth != nullptr) guiLedSynth->identify = 0;
+        guiLedSynth = nullptr;
+    }
 
 }
 

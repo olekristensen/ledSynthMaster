@@ -181,7 +181,10 @@ public:
     
     ofParameter<int> doFaderCalibration     {"doFaderCalibration",      0,0,1};
     ofParameter<int> doSaveId               {"doSaveId",                0,0,1};
-    
+
+    ofParameter<int> identify      {"identify",      0,0,1};
+    ofParameter<int> remoteOverride{"remoteOverride",                0,0,1};
+
     ofParameterGroup hardware {"node",
         ownID,
         remoteID,
@@ -209,7 +212,9 @@ public:
         lightSensorLux,
         lightSensorLightLevel,
         doFaderCalibration,
-        doSaveId
+        doSaveId,
+        identify,
+        remoteOverride
     };
     
     ofParameterGroup graphParameters {"graphParameters",
