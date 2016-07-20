@@ -1,0 +1,9 @@
+//
+//  ofxCv.xcconfig
+//  ledSynthMaster
+//
+//  Created by Ole Kristensen on 06/06/2016.
+//
+//
+
+$(OF_PATH)/addons/ofxGui/libs $(OF_PATH)/addons/ofxGui/src $(OF_PATH)/addons/ofxOsc/libs $(OF_PATH)/addons/ofxOsc/libs/oscpack $(OF_PATH)/addons/ofxOsc/libs/oscpack/src $(OF_PATH)/addons/ofxOsc/libs/oscpack/src/ip $(OF_PATH)/addons/ofxOsc/libs/oscpack/src/ip/posix $(OF_PATH)/addons/ofxOsc/libs/oscpack/src/ip/win32 $(OF_PATH)/addons/ofxOsc/libs/oscpack/src/osc $(OF_PATH)/addons/ofxOsc/src $(OF_PATH)/addons/ofxXmlSettings/libs $(OF_PATH)/addons/ofxXmlSettings/src $(OF_PATH)/addons/ofxRFduino/libs $(OF_PATH)/addons/ofxRFduino/src 

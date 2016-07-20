@@ -1,0 +1,17 @@
+<_tree>
+	<rootParameters>
+		<Level__Weater>0.5</Level__Weater>
+		<Update_FPS>12</Update_FPS>
+		<Range__WarmTemperature>1800</Range__WarmTemperature>
+		<Range__ColdTemperature>6500</Range__ColdTemperature>
+		<Speed__Temperature>0.8</Speed__Temperature>
+		<Spread__Temperature>0.33333</Spread__Temperature>
+		<Range__FromIntensity>0</Range__FromIntensity>
+		<Range__ToIntensity>1</Range__ToIntensity>
+		<Speed__Intensity>0.5</Speed__Intensity>
+		<Spread__Intensity>0.35</Spread__Intensity>
+		<Mirror__Movement>1</Mirror__Movement>
+		<Scale__Movement>0.5</Scale__Movement>
+	</rootParameters>
+<_tree/>
+</_tree>

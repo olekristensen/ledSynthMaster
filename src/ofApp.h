@@ -29,6 +29,7 @@
 #import  "BLEDelegate.h"
 #include "BaseTheme.h"
 #include "ofxCv.h"
+#include "ofxGui.h"
 
 
 class GuiTheme : public BaseTheme
@@ -111,6 +112,8 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     
     void ImGuiSliderFromParam(ofAbstractParameter &p);
     void ImGuiRangeFromParams(ofAbstractParameter &pFrom, ofAbstractParameter &pTo);
+    void ImGuiDragFromParam(ofAbstractParameter &p);
+    void ImGuiInputFromParam(ofAbstractParameter &p);
 
     bool showNodeGuis = false;
     
@@ -118,8 +121,8 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     int imageWidth;
     int imageHeight;
 
-    unsigned int kelvinCold = 6500;
-    unsigned int kelvinWarm = 1800;
+    int kelvinCold = 6500;
+    int kelvinWarm = 1800;
     
     ofVec2f offset;
 
@@ -152,28 +155,28 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
     };
     double temperatureSpreadCubic = 0.0;
     
-    ofParameter<float> brightnessRangeFrom {
-        "Range##FromBrightness",
+    ofParameter<float> intensityRangeFrom {
+        "Range##FromIntensity",
         0.0, 0.0, 1.0
     };
-    ofParameter<float> brightnessRangeTo {
-        "Range##ToBrightness",
+    ofParameter<float> intensityRangeTo {
+        "Range##ToIntensity",
         1.0, 0.0, 1.0
     };
-    ofParameter<float> brightnessSpeed {
-        "Speed##Brightness",
+    ofParameter<float> intensitySpeed {
+        "Speed##Intensity",
         0.5, 0.0, 1.0
     };
-    float brightnessTime = 0.0;
-    ofParameter<float> brightnessSpread {
-        "Spread##Brightness",
+    float intensityTime = 0.0;
+    ofParameter<float> intensitySpread {
+        "Spread##Intensity",
         0.35, 0.0, 1.0
     };
-    double brightnessSpreadCubic = 0.0;
+    double intensitySpreadCubic = 0.0;
     
     float timeOffset = 1000.0;
     float lastTemperatureManipulationSeconds = 0;
-    float lastBrightnessManipulationSeconds = 0;
+    float lastintensityManipulationSeconds = 0;
     float manipulationTimeoutSeconds = 30.0;
     
     float statusbarHeight = 68;
@@ -206,18 +209,23 @@ class ofApp : public ofBaseApp, public ofxRFduinoApp {
         kelvinColdRange,
         temperatureSpeed,
         temperatureSpread,
-        brightnessRangeFrom,
-        brightnessRangeTo,
-        brightnessSpeed,
-        brightnessSpread,
+        intensityRangeFrom,
+        intensityRangeTo,
+        intensitySpeed,
+        intensitySpread,
         mirrorCamera,
         offsetScale
     };
     
+    void saveParameterGroup(ofParameterGroup &g, string name);
+
+    void loadParameterGroup(ofParameterGroup &g, string name);
+    
     ofxCv::FlowFarneback fb;
     
     ofVec2f mouseDragOffset;
+    char strSaveFileName[128] = "defaults";
     
-    string getConfigurationString();
+    bool showGuiDemo = false;
     
 };

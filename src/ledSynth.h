@@ -135,7 +135,7 @@ public:
     
     void setup();
     void update();
-    void draw();
+    void draw(bool selected = false);
     
     void receivedData( NSData *data);
     void hardwareInit();
@@ -233,6 +233,23 @@ public:
         hardware,
         connected,
         disconnect,
+        position
+    };
+    
+    ofParameterGroup persistentParameters { "persistentParameters",
+        remoteID,
+        mixRemote,
+        mixNoise,
+        intensityFader,
+        temperatureFader,
+        intensityRemote,
+        temperatureRemote,
+        intensityRangeTop,
+        intensityRangeBottom,
+        temperatureRangeTop,
+        temperatureRangeBottom,
+        useRanges,
+        movementSensorLedActive,
         position
     };
 

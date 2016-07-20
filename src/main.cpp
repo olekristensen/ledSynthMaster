@@ -25,9 +25,9 @@ extern "C"{
 int main( ){
     
     ofGLFWWindowSettings settings;
-    settings.width = 1065;
-    settings.height = 833;
-    settings.setPosition(ofVec2f(300,0));
+    settings.width = 1356;
+    settings.height = 824;
+    settings.setPosition(ofVec2f(20,0));
     settings.resizable = true;
     settings.numSamples = 8;
     settings.setGLVersion(4, 1);

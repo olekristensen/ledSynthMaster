@@ -1,4 +1,4 @@
-/*  
+/*
  ledSynthMaster - a server/gateway for ledSynth dmx controllers
  for control praradigm experiments with LED fixtures.
  Copyright (C) 2015  Ole Kristensen
@@ -23,12 +23,14 @@
 #include "ofApp.h"
 #include <dispatch/dispatch.h>
 
+//#define USE_DUMMY_NODES 1
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     
     ofSetLogLevel(OF_LOG_NOTICE);
     ofSetCircleResolution(200);
-
+    
     ble = [[BLEDelegate alloc] init];
     [ble initialize];
     [ble setApplication:this];
@@ -39,11 +41,13 @@ void ofApp::setup(){
     fontNode.load("fonts/OpenSans-Regular.ttf", 11, true, true, true);
     
     ImGuiIO& io = ImGui::GetIO();
-
+    
     io.Fonts->Clear();
     io.Fonts->AddFontFromFileTTF(ofToDataPath("fonts/OpenSans-Light.ttf", true).c_str(), 16);
     io.Fonts->AddFontFromFileTTF(ofToDataPath("fonts/OpenSans-Regular.ttf", true).c_str(), 16);
     io.Fonts->AddFontFromFileTTF(ofToDataPath("fonts/OpenSans-Light.ttf", true).c_str(), 32);
+    io.Fonts->AddFontFromFileTTF(ofToDataPath("fonts/OpenSans-Regular.ttf", true).c_str(), 11);
+    io.Fonts->AddFontFromFileTTF(ofToDataPath("fonts/OpenSans-Bold.ttf", true).c_str(), 11);
     io.Fonts->Build();
     
     gui.setup(new GuiTheme());
@@ -105,18 +109,19 @@ void ofApp::setup(){
     style->Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
     style->Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
     style->Colors[ImGuiCol_ModalWindowDarkening]  = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
-
-        // FAKE NODES
-    /**
-    for (int i = 1; i < 10; i++){
-    ledSynth *l = new ledSynth();
+    
+    // DUMMY NODES
+#ifdef USE_DUMMY_NODES
+    
+    for (int i = 1; i < USE_DUMMY_NODES; i++){
+        ledSynth *l = new ledSynth();
         l->setPeripheral(NULL);
         l->canSend = false;
-        l->ownID = i;
-        l->remoteID = i;
+        l->ownID = -1;
+        l->remoteID = i-1;
         ledSynths.push_back(l);
     }
-    //*/
+#endif
     
     // Digital Weather
     
@@ -126,13 +131,13 @@ void ofApp::setup(){
     
     layout();
     
-    temperatureTime = brightnessTime = timeOffset;
+    temperatureTime = intensityTime = timeOffset;
     offset.set(0,0);
     
     draggedLedSynth = nullptr;
     guiLedSynth = nullptr;
     tooltipLedSynth = nullptr;
-
+    
     int deviceId = 0;
     
     for(auto dev : camera.listDevices()){
@@ -148,7 +153,8 @@ void ofApp::setup(){
         }
     }
     camera.setDeviceID(deviceId);
-    camera.setup(320, 320*9/16);
+    //camera.setup(320, 320*9/16);
+    camera.setup(320, 320*3/4);
     cameraImage.allocate(camera.getWidth(), camera.getHeight(), OF_IMAGE_COLOR);
     
     kalman.init(1/5000., 1/10.); // inverse of (smoothness, rapidness)
@@ -164,7 +170,7 @@ void ofApp::setup(){
 }
 
 void ofApp::exit(){
-
+    
     [ble cleanup];
 }
 
@@ -188,10 +194,10 @@ void ofApp::update(){
         fb.calcOpticalFlow(cameraImage);
         averageMovement = fb.getAverageFlow();
     }
-
+    
     kalman.update(averageMovement);
     averageMovementFiltered = kalman.getEstimation();
-
+    
     
     if(ofGetFrameNum() == 3){
         cam.disableMouseInput();
@@ -201,43 +207,64 @@ void ofApp::update(){
         layout();
     }
     int index = 0;
-
+    
     for (auto l : ledSynths){
         
         // update values
         
-        if(l->connected){
-        if (l->ownID > 0 && l->mixRemote >= 0 && l->remoteID >= 0) {
+#ifdef USE_DUMMY_NODES
+        
+        if(!l->connected && l->ownID == -1 && ofRandom(1.0) > 0.99)
+            l->connected = true;
+        
+        if(l->connected && l->ownID == -1 && ofRandom(1.0) > 0.99){
+            l->ownID = l->remoteID + 1;
+        }
+        
+        if(l->connected && l->ownID != -1 && ofRandom(1.0) > 0.99){
+            l->initDone = true;
+        }
+        
+#endif
+        
+        if(l->initDone && l->connected){
+#ifdef USE_DUMMY_NODES
             
-      
-            if(l->ownID != l->remoteID) {
-                if(l->remoteID == 0){
-                 // using light sensor
-                    
-                    ;
-                    
-                } else {
-                    
-                    ledSynth * remote = NULL;
-                    
-                    for (auto r :ledSynths){
-                        if (r->ownID == l->remoteID) {
-                            remote = r;
-                            break;
+            l->intensityFader.set(floor(ofNoise(ofGetElapsedTimef()+l->ownID)*1000));
+            l->temperatureFader.set(floor(ofMap(ofNoise(23+ofGetElapsedTimef()+l->ownID), 0.0, 1.0, l->temperatureFader.getMin(), l->temperatureFader.getMax()) ));
+            
+#endif
+            if (l->ownID > 0 && l->mixRemote >= 0 && l->remoteID >= 0) {
+                
+                
+                if(l->ownID != l->remoteID) {
+                    if(l->remoteID == 0){
+                        // using light sensor
+                        
+                        ;
+                        
+                    } else {
+                        
+                        ledSynth * remote = NULL;
+                        
+                        for (auto r :ledSynths){
+                            if (r->ownID == l->remoteID) {
+                                remote = r;
+                                break;
+                            }
+                        }
+                        
+                        if(remote != NULL){
+                            l->intensityRemote = ofLerp(remote->intensityOutput, l->intensityNoise, globalNoiseLevel);
+                            l->temperatureRemote = cvRound(ofLerp(remote->temperatureOutput, l->temperatureNoise, globalNoiseLevel));
+                        } else {
+                            l->intensityRemote = ofLerp(l->intensityFader, l->intensityNoise, globalNoiseLevel);
+                            l->temperatureRemote = cvRound(ofLerp(l->temperatureFader, l->temperatureNoise, globalNoiseLevel));
                         }
                     }
-                    
-                    if(remote != NULL){
-                        l->intensityRemote = ofLerp(remote->intensityOutput, l->intensityNoise, globalNoiseLevel);
-                        l->temperatureRemote = cvRound(ofLerp(remote->temperatureOutput, l->temperatureNoise, globalNoiseLevel));
-                    } else {
-                        l->intensityRemote = ofLerp(l->intensityFader, l->intensityNoise, globalNoiseLevel);
-                        l->temperatureRemote = cvRound(ofLerp(l->temperatureFader, l->temperatureNoise, globalNoiseLevel));
-                    }
                 }
+                
             }
-        
-        }
         }
         l->update();
         // rearrange
@@ -257,10 +284,10 @@ void ofApp::draw(){
     ofBackgroundGradient(ofColor::lightGrey, ofColor::whiteSmoke);
     
     gui.begin();
-
+    
     // Guis
     //ImGui::End();
-    //ImGui::ShowTestWindow();
+    if(showGuiDemo) ImGui::ShowTestWindow();
     
     ImGuiWindowFlags window_flags = 0;
     window_flags |= ImGuiWindowFlags_NoTitleBar;
@@ -277,9 +304,9 @@ void ofApp::draw(){
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[2]);
     ImGui::TextUnformatted("Digital Weather");
     ImGui::PopFont();
-
+    
     ImGui::Text("FPS %.3f", ofGetFrameRate());
-
+    
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
     ImGui::TextUnformatted("Weather Level");
     ImGui::PopFont();
@@ -292,22 +319,22 @@ void ofApp::draw(){
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
     ImGui::TextUnformatted("Temperature");
     ImGui::PopFont();
-
+    
     ImGuiRangeFromParams(kelvinWarmRange, kelvinColdRange);
     ImGuiSliderFromParam(temperatureSpeed);
     ImGuiSliderFromParam(temperatureSpread);
-
+    
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
-    ImGui::TextUnformatted("Brightness");
+    ImGui::TextUnformatted("Intensity");
     ImGui::PopFont();
-
-    ImGuiRangeFromParams(brightnessRangeFrom, brightnessRangeTo);
-
-    ImGuiSliderFromParam(brightnessSpeed);
-    ImGuiSliderFromParam(brightnessSpread);
+    
+    ImGuiRangeFromParams(intensityRangeFrom, intensityRangeTo);
+    
+    ImGuiSliderFromParam(intensitySpeed);
+    ImGuiSliderFromParam(intensitySpread);
     
     temperatureSpreadCubic = powf(temperatureSpread, 3);
-    brightnessSpreadCubic = powf(brightnessSpread, 3);
+    intensitySpreadCubic = powf(intensitySpread, 3);
     
     int imageWidth = digitalWeatherImage.getWidth();
     int imageHeight = digitalWeatherImage.getHeight();
@@ -323,7 +350,7 @@ void ofApp::draw(){
         for (int x = 0; x < imageWidth ; x++) {
             
             double xMapped = ofMap(x-(imageWidth*offset.x), 0, imageWidth, -10.0, 10.0);
-
+            
             /*
              // 4D shape that wraps to make tiling
              float s=xMapped*1.0/imageWidth;
@@ -336,13 +363,13 @@ void ofApp::draw(){
              float nw = sin( t * TWO_PI ) * multiplier;
              
              float size = 10.0;
-             float brightnessSize = size * brightnessSpreadCubic;
+             float intensitySize = size * intensitySpreadCubic;
              
-             float brightness = ofNoise((nx*brightnessSize)+brightnessTime,
-             (ny*brightnessSize)+brightnessTime,
-             (nz*brightnessSize)+brightnessTime,
-             (nw*brightnessSize)+brightnessTime);
-             brightness = ofMap(brightness, 0.0, 1.0, brightnessRangeFrom, brightnessRangeTo);
+             float intensity = ofNoise((nx*intensitySize)+intensityTime,
+             (ny*intensitySize)+intensityTime,
+             (nz*intensitySize)+intensityTime,
+             (nw*intensitySize)+intensityTime);
+             intensity = ofMap(intensity, 0.0, 1.0, intensityRangeFrom, intensityRangeTo);
              
              float temperatureSize = size * temperatureSpreadCubic;
              
@@ -355,134 +382,145 @@ void ofApp::draw(){
              */
             
             pix.setColor(x, y, getColor(xMapped, yMapped));
-
+            
         }
-
+        
     });
     
     temperatureTime += powf(temperatureSpeed,8) * ofGetLastFrameTime();
-    brightnessTime += powf(brightnessSpeed,8) * ofGetLastFrameTime();
-
+    intensityTime += powf(intensitySpeed,8) * ofGetLastFrameTime();
+    
     digitalWeatherImage.update();
-
+    
     ofSetColor(255,255);
     
     // Nodes
-
+    
     digitalWeatherImage.draw(weatherRect);
-
+    
+    // Connections
+    
+    ofSetColor(255,63);
     for (auto l :ledSynths){
-
+        
+        if(l->initDone){
+            
+            if(l->remoteID != l->ownID){
+                
+                ledSynth * remote = NULL;
+                
+                for (auto r :ledSynths){
+                    if (r->ownID == l->remoteID) {
+                        remote = r;
+                        break;
+                    }
+                }
+                
+                if(remote != NULL && remote->initDone){
+                    
+                    ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
+                    ofVec2f remotePosition = (remote->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
+                    
+                    ofVec2f positionToRemote = remotePosition - position;
+                    ofVec2f remoteToPosition = position - remotePosition;
+                    
+                    positionToRemote.scale(33);
+                    remoteToPosition.scale(37);
+                    
+                    ofDrawArrow(remotePosition-positionToRemote, position-remoteToPosition, 4);
+                }
+            }
+        }
+    }
+    
+    int numberOfConnectingLedSynths = 0;
+    
+    for (auto l :ledSynths){
+        
         ofPushMatrix();
         
-        ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
+        if(l->initDone){
+            ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
+            
+            ofTranslate(position.x, position.y);
+            l->intensityNoise = 1000*getIntensity(l->position.get());
+            l->temperatureNoise = getTemperature(l->position.get());
+        } else {
+            ofTranslate((weatherRect.getRight()-(statusbarHeight/2.0))-numberOfConnectingLedSynths*statusbarHeight/1.5, weatherRect.getBottom()+(statusbarHeight/2.0));
+            numberOfConnectingLedSynths++;
+        }
         
-        ofTranslate(position.x, position.y);
-        l->intensityNoise = 1000*getIntensity(l->position.get());
-        l->temperatureNoise = getTemperature(l->position.get());
+        l->draw(l==guiLedSynth);
         
-        l->draw();
-        ofSetColor((l->intensityOutput > l->intensityOutput.getMax()/2)?0:255, 200);
-        fontNode.drawStringAsShapes(ofToString(l->ownID), -fontNode.stringWidth(ofToString(l->ownID))*0.55, fontNode.stringHeight(ofToString(l->ownID))*0.55);
+        if(l->ownID > 0){
+            ofSetColor((l->intensityOutput > l->intensityOutput.getMax()/2)?0:255, 200);
+            fontNode.drawStringAsShapes(ofToString(l->ownID), -fontNode.stringWidth(ofToString(l->ownID))*0.5, fontNode.stringHeight(ofToString(l->ownID))*0.5);
+        }
         ofPopMatrix();
         
     }
-
-    // Connections
     
-    ofSetColor(63,255);
-    for (auto l :ledSynths){
-
-        if(l->remoteID != l->ownID){
-            
-            ledSynth * remote = NULL;
-            
-            for (auto r :ledSynths){
-                if (r->ownID == l->remoteID) {
-                    remote = r;
-                    break;
-                }
-            }
-            
-            if(remote != NULL){
-                ofDrawArrow(remote->position.get(), l->position.get(), 0.01);
-            }
-        }
-    }
-    
-    // Node Tooltips
-    
-    if(tooltipLedSynth != nullptr){
-        
-        ImGui::BeginTooltip();
-        float percent;
-
-        ImGui::Text("ID: %i\nVersion: %i.%i", tooltipLedSynth->ownID.get(), tooltipLedSynth->versionMajor.get(), tooltipLedSynth->versionMinor.get());
-        if(tooltipLedSynth->ownID.get() == tooltipLedSynth->remoteID.get()){
-            ImGui::TextUnformatted("Movement sensor selected");
-        } else if (tooltipLedSynth->remoteID.get() == 0){
-            ImGui::TextUnformatted("Light sensor selected");
-        } else {
-            ImGui::Text("Remote %i selected", tooltipLedSynth->remoteID.get());
-        }
-        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
-        ImGui::TextUnformatted("Faders");
-        ImGui::PopFont();
-        percent = tooltipLedSynth->intensityFader.get() * 0.1;
-        ImGui::Text("Intensity: %.1f %%\nTemperature: %i k", percent, tooltipLedSynth->temperatureFader.get());
-        
-            ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
-            ImGui::TextUnformatted("Remote");
-            ImGui::PopFont();
-            percent = tooltipLedSynth->intensityRemote.get() * 0.1;
-            ImGui::Text("Channel: %i\nIntensity: %.1f %%\nTemperature: %i k\nMix: %.1f %%", tooltipLedSynth->remoteID.get(), percent, tooltipLedSynth->temperatureRemote.get(), ofMap(tooltipLedSynth->mixRemote.get(), tooltipLedSynth->mixRemote.getMin(), tooltipLedSynth->mixRemote.getMax(), 0.0, 100.0));
-
-        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
-        ImGui::TextUnformatted("Weather");
-        ImGui::PopFont();
-        percent = tooltipLedSynth->intensityNoise.get() * 0.1;
-        ImGui::Text("Intensity: %.1f %%\nTemperature: %i k\nMix: %.1f %%", percent, tooltipLedSynth->temperatureNoise.get(), ofMap(tooltipLedSynth->mixNoise.get(), tooltipLedSynth->mixNoise.getMin(), tooltipLedSynth->mixNoise.getMax(), 0.0, 100.0));
-        
-        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
-        ImGui::TextUnformatted("Output");
-        ImGui::PopFont();
-        percent = tooltipLedSynth->intensityOutput.get() * 0.1;
-        ImGui::Text("Intensity: %.1f %%\nTemperature: %i k", percent, tooltipLedSynth->temperatureOutput.get());
-        
-        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
-        ImGui::TextUnformatted("Movement Sensor");
-        ImGui::PopFont();
-        ImGui::Text("Sensor: %s\nLevel: %.1f %%", tooltipLedSynth->movementSensor.get()>0?"activity":"still", ofMap(tooltipLedSynth->movementSensorLevel.get(), 0, 1000, 0.0, 100.0));
-        
-        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
-        ImGui::TextUnformatted("Light Sensor");
-        ImGui::PopFont();
-        ImGui::Text("Intensity: %i lux\nTemperature: %i k\nLevel: %i", tooltipLedSynth->lightSensorLux.get(), tooltipLedSynth->lightSensorTemperature.get(), tooltipLedSynth->lightSensorLightLevel.get());
-        
-        ImGui::EndTooltip();
-    }
-    
-
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
     ImGui::TextUnformatted("Presets");
     ImGui::PopFont();
-
-    char strSaveFileName[128] = "Untitled";
+    
     ImGui::PushItemWidth(195);
-    ImGui::InputText("##PresetSaveFileName", strSaveFileName, 128);
+    
+    bool updatePresetItem = false;
+    
+    ImGui::InputText("##PresetSaveFileName", strSaveFileName, 128, ImGuiInputTextFlags_CallbackCharFilter,
+                     [] (ImGuiTextEditCallbackData* data) { if (strchr("\\/%&.:<>|", (char)data->EventChar)) return 1; return 0; }
+                     );
     ImGui::PopItemWidth();
     ImGui::SameLine();
-    if(ImGui::Button("Save", ofVec2f(50,25))){
-        //TODO: save a new preset
+    if(strlen(strSaveFileName) > 0){
+        if(ImGui::Button("Save", ofVec2f(50,25))){
+            saveParameterGroup(rootParameters, strSaveFileName);
+            updatePresetItem = true;
+        }
+    } else {
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5 );
+        ImGui::Button("Save", ofVec2f(50,25));
+        ImGui::PopStyleVar();
     }
-
-    static int item = -1;
+    
+    vector<string> presetItems;
+    
+    ofDirectory presetsDir("presets");
+    for (auto f : presetsDir.getFiles()){
+        if(f.isDirectory()){
+            presetItems.push_back(f.getFileName());
+        }
+    }
+    
+    static int presetComboItem = -1;
+    
+    std::vector<const char *> cStrArray;
+    cStrArray.reserve(presetItems.size());
+    for(int index = 0; index < presetItems.size(); ++index)
+    {
+        cStrArray.push_back(presetItems[index].c_str());
+        if(updatePresetItem){
+            if(strcmp(presetItems[index].c_str(), strSaveFileName) == 0)
+            {
+                presetComboItem = index;
+            }
+        }
+    }
+    
     ImGui::PushItemWidth(195);
-    ImGui::Combo("##PresetLoadFileName", &item, "First\0Second\0Third\0Fourth\0Fifth\0Sixth\0Seventh\0Eigth\0Ninth\0Tenth\0\0");   // Combo using values packed in a single constant string (for really quick combo)
+    ImGui::Combo("##PresetLoadFileName", &presetComboItem, &cStrArray[0], cStrArray.size());
     ImGui::PopItemWidth();
     ImGui::SameLine();
-    if(ImGui::Button("Load", ofVec2f(50,25))){
-        //TODO: load a new preset
+    if(presetComboItem > -1){
+        if(ImGui::Button("Load", ofVec2f(50,25))){
+            loadParameterGroup(rootParameters, cStrArray[presetComboItem]);
+            strcpy (strSaveFileName,cStrArray[presetComboItem]);
+        }
+    } else {
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5 );
+        ImGui::Button("Load", ofVec2f(50,25));
+        ImGui::PopStyleVar();
     }
     
     ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
@@ -496,20 +534,178 @@ void ofApp::draw(){
     ImGui::InputFloat2("Offset", offset.getPtr());
     
     /*
-    ImGui::End();
+     ImGui::End();
+     
+     ImGui::SetNextWindowPos(ofVec2f(400,0), ImGuiSetCond_FirstUseEver);
+     ImGui::SetNextWindowSize(ofVec2f(guiColumnWidth,ofGetHeight()), ImGuiSetCond_FirstUseEver);
+     ImGui::Begin("OpenCv");
+     
+     ImGui::SliderFloat("Pyramid Scale", &fbPyrScale, 0, .99);
+     ImGui::SliderInt("Levels", &fbLevels, 1, 8);
+     ImGui::SliderInt("Iterations", &fbIterations, 1, 8);
+     ImGui::SliderInt("Poly N", &fbPolyN, 5, 10);
+     ImGui::SliderFloat("Poly Sigma", &fbPolySigma, 1.1, 2.0);
+     ImGui::Checkbox("Use Gaussian", &fbUseGaussian);
+     ImGui::SliderInt("Window Size", &fbWinSize, 4, 64);
+     */
     
-    ImGui::SetNextWindowPos(ofVec2f(400,0), ImGuiSetCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ofVec2f(guiColumnWidth,ofGetHeight()), ImGuiSetCond_FirstUseEver);
-    ImGui::Begin("OpenCv");
+    
+    if(guiLedSynth != nullptr){
+        //TODO: Node editor
+        
+        ImGui::End();
+        
+        ImGui::SetNextWindowPos(ofVec2f(ofGetWidth()-guiColumnWidth,0));
+        ImGui::SetNextWindowSize(ofVec2f(guiColumnWidth,ofGetHeight()));
+        ImGui::Begin("Node Editor", NULL, window_flags);
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[2]);
+        ImGui::Text("Node %i",guiLedSynth->ownID.get());
+        ImGui::PopFont();
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[3]);
+        ImGui::Text("Software version: %i.%i", guiLedSynth->versionMajor.get(), guiLedSynth->versionMinor.get());
+        ImGui::PopFont();
 
-    ImGui::SliderFloat("Pyramid Scale", &fbPyrScale, 0, .99);
-    ImGui::SliderInt("Levels", &fbLevels, 1, 8);
-    ImGui::SliderInt("Iterations", &fbIterations, 1, 8);
-    ImGui::SliderInt("Poly N", &fbPolyN, 5, 10);
-    ImGui::SliderFloat("Poly Sigma", &fbPolySigma, 1.1, 2.0);
-    ImGui::Checkbox("Use Gaussian", &fbUseGaussian);
-    ImGui::SliderInt("Window Size", &fbWinSize, 4, 64);
-*/
+        ImGui::PushItemWidth(195-60);
+
+        ImGuiInputFromParam(guiLedSynth->ownID);
+        ImGui::SameLine();
+        if(ImGui::Button("Save in node##doSaveId")){
+            guiLedSynth->doSaveId.set(1);
+        };
+        
+        ImGuiInputFromParam(guiLedSynth->remoteID);
+        
+        ImGui::PopItemWidth();
+
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[3]);
+        if(guiLedSynth->ownID.get() == guiLedSynth->remoteID.get()){
+            ImGui::TextUnformatted("Movement sensor selected");
+        } else if (guiLedSynth->remoteID.get() == 0){
+            ImGui::TextUnformatted("Light sensor selected");
+        } else {
+            ImGui::Text("Remote %i selected", guiLedSynth->remoteID.get());
+        }
+        ImGui::PopFont();
+
+        //  ImGui::TextUnformatted([guiLedSynth->peripheral identifier]);
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+        ImGui::TextUnformatted("Ranges");
+        ImGui::PopFont();
+        ImGui::Text("Intensity: %.1f %%  ...  %.1f %%",
+                    ofMap(guiLedSynth->intensityRangeBottom, 0, 1023, 0.0, 100.0),
+                    ofMap(guiLedSynth->intensityRangeTop, 0, 1023, 0.0, 100.0)
+                    );
+        ImGui::Text("Temperature: %i k  ...  %i k", int(
+                    floor(ofMap(guiLedSynth->temperatureRangeBottom, 0, 1023, guiLedSynth->temperatureOutput.getMin(), guiLedSynth->temperatureOutput.getMax()))),
+                    int(floor(ofMap(guiLedSynth->temperatureRangeTop, 0, 1023, guiLedSynth->temperatureOutput.getMin(), guiLedSynth->temperatureOutput.getMax())))
+                    );
+        bool useRanges = guiLedSynth->useRanges.get() == 1;
+        if(ImGui::Checkbox("Use Ranges", &useRanges)){
+            guiLedSynth->useRanges.set(useRanges?1:0);
+        }
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+        ImGui::TextUnformatted("Faders");
+        ImGui::PopFont();
+        ImGuiSliderFromParam(guiLedSynth->intensityFader);
+        ImGuiSliderFromParam(guiLedSynth->temperatureFader);
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+        ImGui::TextUnformatted("Remote");
+        ImGui::PopFont();
+        ImGuiSliderFromParam(guiLedSynth->intensityRemote);
+        ImGuiSliderFromParam(guiLedSynth->temperatureRemote);
+        ImGuiSliderFromParam(guiLedSynth->mixRemote);
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+        ImGui::TextUnformatted("Weather");
+        ImGui::PopFont();
+        ImGuiSliderFromParam(guiLedSynth->intensityNoise);
+        ImGuiSliderFromParam(guiLedSynth->temperatureNoise);
+        ImGuiSliderFromParam(guiLedSynth->mixNoise);
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[1]);
+        ImGui::TextUnformatted("Output");
+        ImGui::PopFont();
+        ImGuiSliderFromParam(guiLedSynth->intensityOutput);
+        ImGuiSliderFromParam(guiLedSynth->temperatureOutput);
+        
+    }
+    
+    
+    // Node Tooltips
+    
+    if(tooltipLedSynth != nullptr){
+        
+        ImGui::BeginTooltip();
+        float percent;
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[3]);
+        
+        ImGui::Text("ID: %i\nVersion: %i.%i", tooltipLedSynth->ownID.get(), tooltipLedSynth->versionMajor.get(), tooltipLedSynth->versionMinor.get());
+        if(tooltipLedSynth->ownID.get() == tooltipLedSynth->remoteID.get()){
+            ImGui::TextUnformatted("Movement sensor selected");
+        } else if (tooltipLedSynth->remoteID.get() == 0){
+            ImGui::TextUnformatted("Light sensor selected");
+        } else {
+            ImGui::Text("Remote %i selected", tooltipLedSynth->remoteID.get());
+        }
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[4]);
+        ImGui::TextUnformatted("Faders");
+        ImGui::PopFont();
+        percent = tooltipLedSynth->intensityFader.get() * 0.1;
+        ImGui::Text("Intensity: %.1f %%\nTemperature: %i k", percent, tooltipLedSynth->temperatureFader.get());
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[4]);
+        ImGui::TextUnformatted("Remote");
+        ImGui::PopFont();
+        percent = tooltipLedSynth->intensityRemote.get() * 0.1;
+        ImGui::Text("Channel: %i\nIntensity: %.1f %%\nTemperature: %i k\nMix: %.1f %%", tooltipLedSynth->remoteID.get(), percent, tooltipLedSynth->temperatureRemote.get(), ofMap(tooltipLedSynth->mixRemote.get(), tooltipLedSynth->mixRemote.getMin(), tooltipLedSynth->mixRemote.getMax(), 0.0, 100.0));
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[4]);
+        ImGui::TextUnformatted("Weather");
+        ImGui::PopFont();
+        percent = tooltipLedSynth->intensityNoise.get() * 0.1;
+        ImGui::Text("Intensity: %.1f %%\nTemperature: %i k\nMix: %.1f %%", percent, tooltipLedSynth->temperatureNoise.get(), ofMap(tooltipLedSynth->mixNoise.get(), tooltipLedSynth->mixNoise.getMin(), tooltipLedSynth->mixNoise.getMax(), 0.0, 100.0));
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[4]);
+        ImGui::TextUnformatted("Output");
+        ImGui::PopFont();
+        percent = tooltipLedSynth->intensityOutput.get() * 0.1;
+        ImGui::Text("Intensity: %.1f %%\nTemperature: %i k", percent, tooltipLedSynth->temperatureOutput.get());
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[4]);
+        ImGui::TextUnformatted("Movement Sensor");
+        ImGui::PopFont();
+        ImGui::Text("Sensor: %s\nLevel: %.1f %%", tooltipLedSynth->movementSensor.get()>0?"activity":"still", ofMap(tooltipLedSynth->movementSensorLevel.get(), 0, 1000, 0.0, 100.0));
+        
+        ImGui::PushFont(ImGuiIO().Fonts->Fonts[4]);
+        ImGui::TextUnformatted("Light Sensor");
+        ImGui::PopFont();
+        ImGui::Text("Intensity: %i lux\nTemperature: %i k\nLevel: %i", tooltipLedSynth->lightSensorLux.get(), tooltipLedSynth->lightSensorTemperature.get(), tooltipLedSynth->lightSensorLightLevel.get());
+        ImGui::PopFont();
+        
+        ImGui::EndTooltip();
+    }
+    
+    // Status bar
+    
+    string status = ([ble isLECapableHardware]?"Bluetooth LE supported":"No Bluetooth LE support");
+    status += "\n" + ofToString(ledSynths.size()) + " devices connected";
+    
+    float statusbarMargin = 20;
+    //    statusbarHeight = fontStatus.stringHeight(status) + (statusbarMargin * 2.0);
+    ofSetColor(255, 200);
+    ofDrawRectangle(guiColumnWidth, ofGetHeight()-statusbarHeight, ofGetWidth(), statusbarHeight);
+    ofSetColor(0, 127);
+    ofPushMatrix();
+    ofTranslate(statusbarMargin+guiColumnWidth, (ofGetHeight()-statusbarHeight)+32);
+    fontStatus.drawString(status, 0, 0);
+    ofPopMatrix();
+    
+    
     gui.end();
     
     // Camera
@@ -522,35 +718,21 @@ void ofApp::draw(){
     ofDrawEllipse(center.x, center.y, 10, 10);
     ofPushMatrix();
     ofScale(1.0, 1.0, 0.0);
-        if((averageMovementFiltered*guiColumnWidth*0.2).length() > 5)
+    if((averageMovementFiltered*guiColumnWidth*0.2).length() > 5)
         ofDrawArrow(center, center+(averageMovementFiltered*guiColumnWidth*0.2), 5);
     ofPopMatrix();
     
-    // Status bar
-    
-    string status = ([ble isLECapableHardware]?"Bluetooth LE supported":"No Bluetooth LE support");
-    status += "\n" + ofToString(ledSynths.size()) + " devices connected";
-    
-    float statusbarMargin = 20;
-//    statusbarHeight = fontStatus.stringHeight(status) + (statusbarMargin * 2.0);
-    ofSetColor(255, 200);
-    ofDrawRectangle(guiColumnWidth, ofGetHeight()-statusbarHeight, ofGetWidth(), statusbarHeight);
-    ofSetColor(0, 127);
-    ofPushMatrix();
-    ofTranslate(statusbarMargin+guiColumnWidth, (ofGetHeight()-statusbarHeight)+32);
-    fontStatus.drawString(status, 0, 0);
-    ofPopMatrix();
-
 }
 
 void ofApp::layout(){
-    int windowHeight = (ofGetWindowWidth()-guiColumnWidth)+statusbarHeight;
+    int windowHeight = (ofGetWindowWidth()-(guiColumnWidth*2))+statusbarHeight;
     ofSetWindowShape(ofGetWindowWidth(), windowHeight);
     ofLogNotice(__FUNCTION__) << ofGetWindowRect() << endl;
     windowDidResize = false;
-    weatherRect.set(guiColumnWidth, 0, ofGetWindowWidth()-guiColumnWidth, ofGetWindowHeight()-statusbarHeight);
+    weatherRect.set(guiColumnWidth, 0, ofGetWindowWidth()-(guiColumnWidth*2), ofGetWindowHeight()-statusbarHeight);
 }
 
+#pragma mark Noise image functions
 
 ofVec2f ofApp::getMappedCoordsFromImage(ofVec2f v){
     ofVec2f iVec;
@@ -587,27 +769,28 @@ unsigned int ofApp::getTemperature(float x, float y){
 }
 
 float ofApp::getIntensity(float x, float y){
-    float brightness = ofNoise(x*brightnessSpreadCubic, y*brightnessSpreadCubic, brightnessTime);
-    return ofMap(brightness, 0, 1, brightnessRangeFrom, brightnessRangeTo);
+    float intensity = ofNoise(x*intensitySpreadCubic, y*intensitySpreadCubic, intensityTime);
+    return ofMap(intensity, 0, 1, intensityRangeFrom, intensityRangeTo);
 }
 
 ofFloatColor ofApp::getColor(float x, float y){
-    float brightness = getIntensity(x, y);
+    float intensity = getIntensity(x, y);
     int temp = getTemperature(x, y);
     ofFloatColor c = ledSynth::temperatureToColor(temp);
-    c *= brightness;
+    c *= intensity;
     return c;
 }
 
+#pragma mark OF callbacks
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+    if(key == OF_KEY_TAB) showGuiDemo = !showGuiDemo;
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-
+    
 }
 
 //--------------------------------------------------------------
@@ -616,7 +799,7 @@ void ofApp::mouseMoved(int x, int y){
         
         ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
         
-        if(position.distance(ofVec2f(x,y)) < 10.0){
+        if(position.distance(ofVec2f(x,y)) < 30.0){
             tooltipLedSynth = l;
             return;
         }
@@ -633,48 +816,58 @@ void ofApp::mouseDragged(int x, int y, int button){
         mouseVec += mouseDragOffset;
         
         ofVec2f position = (mouseVec - weatherRect.getCenter()) / (weatherRect.getWidth()*0.5);
-
+        
+        if(fabs(position.x) > 1.0 || fabs(position.y) > 1.0){
+            if(fabs(position.x)>fabs(position.y)){
+                position *= 1.0/fabs(position.x);
+            } else{
+                position *= 1.0/fabs(position.y);
+            }
+        }
+        
         draggedLedSynth->position = position;
-    
     }
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-
+    
     if(draggedLedSynth == nullptr){
         for (auto l :ledSynths){
-        
+            
             ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
-
-            if(position.distance(ofVec2f(x,y)) < 10.0){
+            
+            if(position.distance(ofVec2f(x,y)) < 30.0){
                 draggedLedSynth = l;
                 mouseDragOffset = position - ofVec2f(x,y);
+                break;
             }
-        
+            
         }
-    }
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-    if(draggedLedSynth != nullptr){
-        draggedLedSynth = nullptr;
     }
     
     for (auto l :ledSynths){
         
-        ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
-        
-        if(position.distance(ofVec2f(x,y)) < 10.0){
-            guiLedSynth = l;
-            return;
+        if(l->initDone){
+            ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
+            
+            if(position.distance(ofVec2f(x,y)) < 30.0){
+                guiLedSynth = l;
+                return;
+            }
         }
         
     }
-    guiLedSynth = nullptr;
+    if(weatherRect.inside(x, y)) guiLedSynth = nullptr;
 
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseReleased(int x, int y, int button){
+    
+    if(draggedLedSynth != nullptr){
+        draggedLedSynth = nullptr;
+    }
     
 }
 
@@ -685,13 +878,15 @@ void ofApp::windowResized(int w, int h){
 
 //--------------------------------------------------------------
 void ofApp::gotMessage(ofMessage msg){
-
+    
 }
 
 //--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
+void ofApp::dragEvent(ofDragInfo dragInfo){
+    
 }
+
+#pragma mark BLE callbacks
 
 void ofApp::onBluetooth()
 {
@@ -778,7 +973,7 @@ void ofApp::didConnectRFduino(CBPeripheral *peripheral)
             break;
         }
     }
-
+    
     
 }
 
@@ -808,7 +1003,7 @@ void ofApp::didLoadServiceRFduino(CBPeripheral *peripheral)
             break;
         }
     }
-
+    
 }
 
 void ofApp::didDisconnectRFduino(CBPeripheral *peripheral)
@@ -829,13 +1024,20 @@ void ofApp::didDisconnectRFduino(CBPeripheral *peripheral)
     if (found) {
         //[peripheral release];
         //l->removeListeners();
-        
+        if(tooltipLedSynth == (*it)){
+            tooltipLedSynth = nullptr;
+        }
+        if(guiLedSynth == (*it)){
+            guiLedSynth = nullptr;
+        }
         ledSynths.erase(it);
         delete l;
         [ble stopScan];
         [ble startScan];
     }
 }
+
+#pragma mark Gui functions
 
 void ofApp::ImGuiSliderFromParam(ofAbstractParameter &p){
     ofParameter<int> pInt;
@@ -858,6 +1060,48 @@ void ofApp::ImGuiSliderFromParam(ofAbstractParameter &p){
     }
 }
 
+void ofApp::ImGuiDragFromParam(ofAbstractParameter &p){
+    ofParameter<int> pInt;
+    if(p.type() == pInt.type()){
+        ofParameter<int> &pIntValue = p.cast<int>();
+        int value = pIntValue;
+        if(ImGui::DragInt(pIntValue.getName().c_str(), &value, pIntValue.getMin(), pIntValue.getMax())){
+            pIntValue.set(value);
+        }
+        return;
+    }
+    ofParameter<float> pFloat;
+    if(p.type() == pFloat.type()){
+        ofParameter<float> &pFloatValue = p.cast<float>();
+        float value = pFloatValue.get();
+        if(ImGui::DragFloat(pFloatValue.getName().c_str(), &value, pFloatValue.getMin(), pFloatValue.getMax())){
+            pFloatValue.set(value);
+        }
+        return;
+    }
+}
+
+void ofApp::ImGuiInputFromParam(ofAbstractParameter &p){
+    ofParameter<int> pInt;
+    if(p.type() == pInt.type()){
+        ofParameter<int> &pIntValue = p.cast<int>();
+        int value = pIntValue;
+        if(ImGui::InputInt(pIntValue.getName().c_str(), &value)){
+            pIntValue.set(value);
+        }
+        return;
+    }
+    ofParameter<float> pFloat;
+    if(p.type() == pFloat.type()){
+        ofParameter<float> &pFloatValue = p.cast<float>();
+        float value = pFloatValue.get();
+        if(ImGui::InputFloat(pFloatValue.getName().c_str(), &value)){
+            pFloatValue.set(value);
+        }
+        return;
+    }
+}
+
 void ofApp::ImGuiRangeFromParams(ofAbstractParameter &pFrom, ofAbstractParameter &pTo){
     ofParameter<int> pInt;
     if(pFrom.type() == pInt.type()){
@@ -865,7 +1109,7 @@ void ofApp::ImGuiRangeFromParams(ofAbstractParameter &pFrom, ofAbstractParameter
         ofParameter<int> &pIntToValue = pTo.cast<int>();
         int valueFrom = pIntFromValue;
         int valueTo = pIntToValue;
-        if(ImGui::DragIntRange2(pIntFromValue.getName().c_str(), &valueFrom, &valueTo, 1.0, pIntFromValue.getMin(), pIntFromValue.getMax(), "%i")){
+        if(ImGui::DragIntRange2(pIntFromValue.getName().c_str(), &valueFrom, &valueTo, 1.0, pIntFromValue.getMin(), pIntFromValue.getMax())){
             pIntFromValue.set(valueFrom);
             pIntToValue.set(valueTo);
         }
@@ -877,10 +1121,62 @@ void ofApp::ImGuiRangeFromParams(ofAbstractParameter &pFrom, ofAbstractParameter
         ofParameter<float> &pFloatToValue = pTo.cast<float>();
         float valueFrom = pFloatFromValue;
         float valueTo = pFloatToValue;
-        if(ImGui::DragFloatRange2(pFloatFromValue.getName().c_str(), &valueFrom, &valueTo, 1.0, pFloatFromValue.getMin(), pFloatFromValue.getMax(), "%.3f")){
+        if(ImGui::DragFloatRange2(pFloatFromValue.getName().c_str(), &valueFrom, &valueTo, 0.001, pFloatFromValue.getMin(), pFloatFromValue.getMax(), "%.3f")){
             pFloatFromValue.set(valueFrom);
             pFloatToValue.set(valueTo);
         }
         return;
     }
 }
+
+
+void ofApp::saveParameterGroup(ofParameterGroup &g, string name){
+    ofxPanel ofxGuiPanel;
+    for(auto p : g){
+        string newName(p->getName());
+        ofStringReplace(newName, "##", "__");
+        p->setName(newName);
+    }
+    ofxGuiPanel.setup("_"+name);
+    ofxGuiPanel.add(g);
+    ofxGuiPanel.saveToFile("presets/" + name + "/globals.xml");
+    for(auto p : g){
+        string newName(p->getName());
+        ofStringReplace(newName, "__", "##");
+        p->setName(newName);
+    }
+    
+    for(auto l : ledSynths){
+        ofxPanel ofxGuiPanelForLeds;
+        ofxGuiPanelForLeds.setup("_"+name);
+        ofxGuiPanelForLeds.add(l->persistentParameters);
+        ofxGuiPanelForLeds.saveToFile("presets/" + name + "/node-" + ofToString(l->ownID) + ".xml");
+    }
+    
+}
+
+void ofApp::loadParameterGroup(ofParameterGroup &g, string name){
+    ofxPanel ofxGuiPanel;
+    for(auto p : g){
+        string newName(p->getName());
+        ofStringReplace(newName, "##", "__");
+        p->setName(newName);
+    }
+    ofxGuiPanel.setup("_"+name);
+    ofxGuiPanel.add(g);
+    ofxGuiPanel.loadFromFile("presets/" + name + "/globals.xml");
+    for(auto p : g){
+        string newName(p->getName());
+        ofStringReplace(newName, "__", "##");
+        p->setName(newName);
+    }
+    
+    for(auto l : ledSynths){
+        ofxPanel ofxGuiPanelForLeds;
+        ofxGuiPanelForLeds.setup("_"+name);
+        ofxGuiPanelForLeds.add(l->persistentParameters);
+        ofxGuiPanelForLeds.loadFromFile("presets/" + name + "/node-" + ofToString(l->ownID) + ".xml");
+    }
+    
+}
+

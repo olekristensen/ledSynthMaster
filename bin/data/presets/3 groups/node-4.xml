@@ -1,0 +1,19 @@
+<_3_groups>
+	<persistentParameters>
+		<remoteID>3</remoteID>
+		<mixRemote>0</mixRemote>
+		<mixNoise>0</mixNoise>
+		<intensityFader>512</intensityFader>
+		<temperatureFader>5385</temperatureFader>
+		<intensityRemote>95</intensityRemote>
+		<temperatureRemote>3586</temperatureRemote>
+		<intensityRangeTop>1023</intensityRangeTop>
+		<intensityRangeBottom>0</intensityRangeBottom>
+		<temperatureRangeTop>1023</temperatureRangeTop>
+		<temperatureRangeBottom>0</temperatureRangeBottom>
+		<useRanges>1</useRanges>
+		<movementSensorLedActive>1</movementSensorLedActive>
+		<position>0.769981, -0.37289</position>
+	</persistentParameters>
+<_3_groups/>
+</_3_groups>

@@ -114,7 +114,7 @@ void ledSynth::update(){
 }
 
 //--------------------------------------------------------------
-void ledSynth::draw(){
+void ledSynth::draw(bool selected){
     
     float innerRadius = 10;
     float outerRadius = 30;
@@ -156,7 +156,11 @@ void ledSynth::draw(){
     graph.draw();
     
     graphBackground.setFilled(false);
-    graphBackground.setStrokeColor(ofColor(255,64));
+    if(selected){
+        graphBackground.setStrokeColor(ofColor(255,255));
+    } else {
+        graphBackground.setStrokeColor(ofColor(255,64));
+    }
     graphBackground.setStrokeWidth(1.0);
     graphBackground.draw();
 

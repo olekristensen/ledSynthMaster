@@ -1,0 +1,21 @@
+<_3_groups>
+	<rootParameters>
+		<Level__Weater>0.5</Level__Weater>
+		<Update_FPS>12</Update_FPS>
+		<Range__WarmTemperature>1800</Range__WarmTemperature>
+		<Range__ColdTemperature>6500</Range__ColdTemperature>
+		<Speed__Temperature>0.863</Speed__Temperature>
+		<Spread__Temperature>0.33333</Spread__Temperature>
+		<Range__FromBrightness>0</Range__FromBrightness>
+		<Range__ToBrightness>1</Range__ToBrightness>
+		<Speed__Brightness>0.933</Speed__Brightness>
+		<Spread__Brightness>0.341</Spread__Brightness>
+		<Mirror__Movement>1</Mirror__Movement>
+		<Scale__Movement>0.159</Scale__Movement>
+	<Range__FromIntensity>0</Range__FromIntensity>
+		<Range__ToIntensity>1</Range__ToIntensity>
+		<Speed__Intensity>0.5</Speed__Intensity>
+		<Spread__Intensity>0.35</Spread__Intensity>
+	</rootParameters>
+<_3_groups/>
+</_3_groups>
