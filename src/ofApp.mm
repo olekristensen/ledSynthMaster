@@ -20,6 +20,10 @@
  olek@itu.dk
  */
 
+
+//TODO: Crash from ImGui demo code on 10.10
+//TODO: Light Sensor unsigned/signed... it shows -1 effing k
+
 #include "ofApp.h"
 #include <dispatch/dispatch.h>
 
@@ -859,6 +863,7 @@ void ofApp::mousePressed(int x, int y, int button){
             ofVec2f position = (l->position.get()*weatherRect.getWidth()/2.0) + weatherRect.getCenter();
             
             if(position.distance(ofVec2f(x,y)) < 30.0){
+                if(guiLedSynth != nullptr && guiLedSynth != l ) guiLedSynth->identify = 0;
                 guiLedSynth = l;
                 l->identify = 1;
                 ledSynthClicked = true;
